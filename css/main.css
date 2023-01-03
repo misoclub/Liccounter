@@ -1,0 +1,33 @@
+html,
+body {
+    background-color: #FDFDFD;
+}
+
+
+p.example1 {
+    font-size: clamp(60px, 12vw, 80px);
+    ;
+}
+
+.footer {
+    height: 40px;
+    background-color: #222;
+    /*padding: 0px;*/
+    /*margin: 0px;*/
+}
+
+.noselect {
+    -webkit-touch-callout: none;
+    /* iOS Safari */
+    -webkit-user-select: none;
+    /* Safari */
+    -khtml-user-select: none;
+    /* Konqueror HTML */
+    -moz-user-select: none;
+    /* Firefox */
+    -ms-user-select: none;
+    /* Internet Explorer/Edge */
+    user-select: none;
+    /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}
