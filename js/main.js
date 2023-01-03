@@ -209,7 +209,10 @@ function addMoney(addMoney) {
 }
 
 function downloadText(fileName, text) {
-    const blob = new Blob([text], { type: 'text/plain' });
+
+    var bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+
+    const blob = new Blob([bom, text], { type: 'text/plain' });
     const aTag = document.createElement('a');
     aTag.href = URL.createObjectURL(blob);
     aTag.target = '_blank';
