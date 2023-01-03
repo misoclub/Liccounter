@@ -1,10 +1,6 @@
 isStarted = false;
 startdate = new Date();
 
-// 時給。
-jikyuu = 5000;
-second = jikyuu / 60 / 60;
-
 timerId = 0;
 money = 0;
 
@@ -13,7 +9,7 @@ chageSetting = 0;
 chargeMoney = 0;
 tmpChargeMoney = 0;
 // チャージの区切り分。
-chageMinutes = 1
+chageMinutes = 30
 
 // すべての注文情報を保持したJson。
 var jsonText;
@@ -117,9 +113,6 @@ function startWork(startTime) {
         alert("チャージ料を入力してください");
         return false;
     }
-
-    // 秒給を計算。
-    // second = jikyuu / 60 / 60;
 
     if (startTime == 0) {
         startdate = new Date();
