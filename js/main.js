@@ -33,19 +33,19 @@ function dateToStr24HPad0DayOfWeek(date, format) {
 }
 
 function load() {
-    var saveData = store.get('user_data_liccounter');
+    var saveData = store.get('liccounter_user_data');
     // データが存在するならせっせとフォームにセットしにいく。
     if (!saveData) {
         return;
     }
-    if (saveData["chageSetting"] && saveData["chageSetting"] != "") {
-        $('#chageSetting').val(saveData["chageSetting"]);
+    if (saveData["liccounter_chageSetting"] && saveData["liccounter_chageSetting"] != "") {
+        $('#liccounter_chageSetting').val(saveData["liccounter_chageSetting"]);
     }
     // すでに開始している。
-    if (saveData["enable"] && saveData["enable"] != "") {
-        if (saveData["enable"]) {
+    if (saveData["liccounter_enable"] && saveData["liccounter_enable"] != "") {
+        if (saveData["liccounter_enable"]) {
             isStarted = true;
-            startWork(saveData["time"]);
+            startWork(saveData["liccounter_time"]);
             $('#start').hide();
             $('#stop').show();
             $('#menu_button_0').hide();
@@ -55,8 +55,8 @@ function load() {
     }
 
     // 注文情報をすべて読み込み。
-    if (saveData["jsonText"] && saveData["jsonText"] != "") {
-        json = JSON.parse(saveData["jsonText"]);
+    if (saveData["liccounter_jsonText"] && saveData["liccounter_jsonText"] != "") {
+        json = JSON.parse(saveData["liccounter_jsonText"]);
         json.forEach(function(value) {
             addDrink(value.name, value.amount, new Date(value.date));
         });
@@ -66,13 +66,13 @@ function load() {
 
 function save(_time, _enable, _jikyuu, jsonText) {
     var saveData = {};
-    saveData["time"] = _time.getTime();
-    saveData["enable"] = _enable;
-    saveData["chageSetting"] = _jikyuu;
+    saveData["liccounter_time"] = _time.getTime();
+    saveData["liccounter_enable"] = _enable;
+    saveData["liccounter_chageSetting"] = _jikyuu;
 
-    saveData["jsonText"] = jsonText;
+    saveData["liccounter_jsonText"] = jsonText;
 
-    store.set('user_data_liccounter', saveData);
+    store.set('liccounter_user_data', saveData);
 }
 
 function initialize() {
