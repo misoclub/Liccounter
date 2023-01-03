@@ -17,6 +17,7 @@ taxSetting = 0;
 var jsonText;
 amountDetailArray = [];
 
+drinkCounter = {}
 
 // Webからのコピペ。日付フォーマット。
 function dateToStr24HPad0DayOfWeek(date, format) {
@@ -66,7 +67,7 @@ function load() {
     if (saveData["liccounter_jsonText"] && saveData["liccounter_jsonText"] != "") {
         json = JSON.parse(saveData["liccounter_jsonText"]);
         json.forEach(function(value) {
-            addDrink(value.name, value.amount, new Date(value.date));
+            addDrink(value.name, value.amount, new Date(value.date), value.optionText);
         });
 
     }
@@ -106,7 +107,7 @@ function startWork(startTime) {
         if (chargeMoney != tmpChargeMoney) {
             var count = (chargeMoney / chageSetting) + 1;
             if (IsAddDrink) {
-                addDrink("チャージ料：" + count + "回目👯‍♀️", chageSetting, new Date());
+                addDrink("チャージ料👯‍♀️：", chageSetting, new Date(), "回目");
             }
             chargeMoney = tmpChargeMoney;
         }
@@ -168,15 +169,21 @@ function passTime(startTime) {
     return ('0' + pass_hours).slice(-2) + ":" + ('0' + pass_minutes).slice(-2) + ":" + ('0' + pass_seconds).slice(-2);
 }
 
-function addDrink(name, amount, date) {
+function addDrink(name, amount, date, optionText) {
 
     addMoney(amount);
+
+    if (!drinkCounter[name]) {
+        drinkCounter[name] = 0;
+    }
+    drinkCounter[name] += 1;
+    console.log(drinkCounter[name]);
 
     var nowDatText = dateToStr24HPad0DayOfWeek(date, "hh:mm");
     $("#processesTable").prepend(
         $("<tr></tr>")
         .append($("<td class='vcenter'></td>").html(nowDatText))
-        .append($("<td class='vcenter'></td>").html(name))
+        .append($("<td class='vcenter'></td>").html(name + " " + drinkCounter[name] + optionText))
         .append($("<td class='vcenter'></td>").html(parseInt(amount).toLocaleString() + "円"))
     );
 
@@ -185,6 +192,7 @@ function addDrink(name, amount, date) {
     amountDetail.name = name;
     amountDetail.date = date;
     amountDetail.amount = amount;
+    amountDetail.optionText = optionText;
     amountDetailArray.push(amountDetail);
     jsonText = JSON.stringify(amountDetailArray);
     save(startdate, true, chageSetting, jsonText);
@@ -221,6 +229,15 @@ function makeResultText() {
     taxMoney = (money * (taxSetting / 100));
     totalMoney = money + taxMoney;
     text += parseInt(totalMoney).toLocaleString() + "円" + "(内税" + taxMoney + ")円\n\n";
+
+    text += "◆合計杯数\n";
+    for (let key in drinkCounter) {
+        if (key != "チャージ料👯‍♀️：") {
+            text += key + ' ' + drinkCounter[key] + "杯\n";
+        }
+    }
+    text += "\n";
+
     text += "=======================" + "\n\n"
 
     text += "◆ドリンク詳細\n";
@@ -232,7 +249,9 @@ function makeResultText() {
         text += dateToStr24HPad0DayOfWeek(date, 'hh:mm') + " " + value.name + " " + parseInt(value.amount).toLocaleString() + "円" + "\n";
     });
 
-    text += "\n\n\n";
+    text += "\n=======================" + "\n"
+
+    text += "\n\n";
 
     return text;
 }
@@ -289,19 +308,19 @@ $(function() {
 
     $('#pro-drink').click(function() {
         var amount = $('#pro-amount').val();
-        addDrink("ぷろドリンク🍺", amount, new Date());
+        addDrink("ぷろドリンク🍺：", amount, new Date(), "杯目");
     });
     $('#hino-drink').click(function() {
         var amount = $('#hino-amount').val();
-        addDrink("ひのドリンク🍹", amount, new Date());
+        addDrink("ひのドリンク🍹：", amount, new Date(), "杯目");
     });
     $('#sp-drink').click(function() {
         var amount = $('#sp-amount').val();
-        addDrink("ショット🥃", amount, new Date());
+        addDrink("ショット🥃：", amount, new Date(), "杯目");
     });
     $('#other-drink').click(function() {
         var amount = $('#other-amount').val();
-        addDrink("他ドリンク🥂", amount, new Date());
+        addDrink("他ドリンク🥂：", amount, new Date(), "杯目");
     });
 
     $('#cacheclear').click(function() {
