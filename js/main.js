@@ -210,6 +210,33 @@ function downloadText(fileName, text) {
     URL.revokeObjectURL(aTag.href);
 }
 
+function makeResultText() {
+    var text = "";
+
+    text += "◆来店日時\n";
+    text += dateToStr24HPad0DayOfWeek(startdate, 'YYYY年MM月DD日(WW) hh:mm') + "\n\n";
+    text += "◆滞在時間\n";
+    text += passTime(startdate) + "\n\n";
+    text += "◆支払い金額\n";
+    taxMoney = (money * (taxSetting / 100));
+    totalMoney = money + taxMoney;
+    text += parseInt(totalMoney).toLocaleString() + "円" + "(内税" + taxMoney + ")円\n\n";
+    text += "=======================" + "\n\n"
+
+    text += "◆ドリンク詳細\n";
+
+    // ドリンク詳細。
+    json = JSON.parse(jsonText);
+    json.forEach(function(value) {
+        var date = new Date(value.date);
+        text += dateToStr24HPad0DayOfWeek(date, 'hh:mm') + " " + value.name + " " + parseInt(value.amount).toLocaleString() + "円" + "\n";
+    });
+
+    text += "\n\n\n";
+
+    return text;
+}
+
 $(function() {
     // 開始ボタン。
     $('#start').click(function() {
@@ -254,7 +281,10 @@ $(function() {
 
     $('#resultDownload').click(function() {
         var day = dateToStr24HPad0DayOfWeek(startdate, 'YYYY年MM月DD日(WW) hh:mm');
-        downloadText(day + "_飲みの記録.json", jsonText);
+
+        var resultText = makeResultText();
+        downloadText(day + "_飲みの記録.txt", resultText);
+        // downloadText(day + "_飲みの記録.json", jsonText);
     });
 
     $('#pro-drink').click(function() {
