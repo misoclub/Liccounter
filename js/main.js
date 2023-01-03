@@ -33,7 +33,7 @@ function dateToStr24HPad0DayOfWeek(date, format) {
 }
 
 function load() {
-    var saveData = store.get('user_data');
+    var saveData = store.get('user_data_liccounter');
     // データが存在するならせっせとフォームにセットしにいく。
     if (!saveData) {
         return;
@@ -72,7 +72,7 @@ function save(_time, _enable, _jikyuu, jsonText) {
 
     saveData["jsonText"] = jsonText;
 
-    store.set('user_data', saveData);
+    store.set('user_data_liccounter', saveData);
 }
 
 function initialize() {
