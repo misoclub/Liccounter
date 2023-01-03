@@ -234,7 +234,7 @@ function makeResultText() {
     text += "◆支払い金額\n";
     taxMoney = (money * (taxSetting / 100));
     totalMoney = money + taxMoney;
-    text += parseInt(totalMoney).toLocaleString() + "円" + "(内税" + taxMoney + ")円\n\n";
+    text += parseInt(totalMoney).toLocaleString() + "円" + "(内税" + taxMoney + "円)\n\n";
 
     text += "◆合計杯数\n";
     for (let key in drinkCounter) {
