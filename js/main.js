@@ -146,7 +146,12 @@ function startWork(startTime) {
 function stopWork() {
     clearInterval(timerId);
     isStarted = false;
-    alert("お会計は" + money + "円でした。\n今日も楽しめましたか？");
+
+    taxMoney = (money * (taxSetting / 100));
+    totalMoney = money + taxMoney;
+
+    alert("お会計は" + parseInt(totalMoney).toLocaleString() + "円でした。\n今日も楽しめましたか？");
+
     return true;
 }
 
@@ -193,6 +198,16 @@ function addMoney(addMoney) {
     $('#taxText').text("内税" + taxMoney.toLocaleString() + "円");
 }
 
+function downloadText(fileName, text) {
+    const blob = new Blob([text], { type: 'text/plain' });
+    const aTag = document.createElement('a');
+    aTag.href = URL.createObjectURL(blob);
+    aTag.target = '_blank';
+    aTag.download = fileName;
+    aTag.click();
+    URL.revokeObjectURL(aTag.href);
+}
+
 $(function() {
     // 開始ボタン。
     $('#start').click(function() {
@@ -230,6 +245,12 @@ $(function() {
         // $('#menu_button_0').show();
         $('#menu_button_1').hide();
         $('#menu_button_2').hide();
+        $('#resultDownload').show();
+    });
+
+    $('#resultDownload').click(function() {
+        var day = dateToStr24HPad0DayOfWeek(startdate, 'YYYY年MM月DD日(WW) hh:mm');
+        downloadText(day + "_飲みの記録.json", jsonText);
     });
 
     $('#pro-drink').click(function() {
