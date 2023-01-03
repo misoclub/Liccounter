@@ -42,10 +42,12 @@ function load() {
         return;
     }
     if (saveData["liccounter_chageSetting"] && saveData["liccounter_chageSetting"] != "") {
-        $('#liccounter_chageSetting').val(saveData["liccounter_chageSetting"]);
+        $('#chageSetting').val(saveData["liccounter_chageSetting"]);
+        chageSetting = saveData["liccounter_chageSetting"];
     }
     if (saveData["liccounter_taxSetting"] && saveData["liccounter_taxSetting"] != "") {
-        $('#liccounter_taxSetting').val(saveData["liccounter_taxSetting"]);
+        $('#taxSetting').val(saveData["liccounter_taxSetting"]);
+        taxSetting = saveData["liccounter_taxSetting"];
     }
 
     // すでに開始している。
@@ -119,8 +121,6 @@ function startWork(startTime) {
     // フォームに入力された値を取得。
     chageSetting = $('#chageSetting').val();
     taxSetting = $('#taxSetting').val();
-
-    // console.log(taxSetting);
 
     if (isNaN(chageSetting)) {
         alert("入力されたチャージ料が数値ではありません");
