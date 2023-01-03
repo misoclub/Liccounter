@@ -9,7 +9,9 @@ chageSetting = 0;
 chargeMoney = 0;
 tmpChargeMoney = 0;
 // チャージの区切り分。
-chageMinutes = 30
+chageMinutes = 30;
+
+taxSetting = 0;
 
 // すべての注文情報を保持したJson。
 var jsonText;
@@ -41,6 +43,10 @@ function load() {
     if (saveData["liccounter_chageSetting"] && saveData["liccounter_chageSetting"] != "") {
         $('#liccounter_chageSetting').val(saveData["liccounter_chageSetting"]);
     }
+    if (saveData["liccounter_taxSetting"] && saveData["liccounter_taxSetting"] != "") {
+        $('#liccounter_taxSetting').val(saveData["liccounter_taxSetting"]);
+    }
+
     // すでに開始している。
     if (saveData["liccounter_enable"] && saveData["liccounter_enable"] != "") {
         if (saveData["liccounter_enable"]) {
@@ -69,6 +75,7 @@ function save(_time, _enable, _jikyuu, jsonText) {
     saveData["liccounter_time"] = _time.getTime();
     saveData["liccounter_enable"] = _enable;
     saveData["liccounter_chageSetting"] = _jikyuu;
+    saveData["liccounter_taxSetting"] = taxSetting;
 
     saveData["liccounter_jsonText"] = jsonText;
 
@@ -105,6 +112,9 @@ function startWork(startTime) {
 
     // フォームに入力された値を取得。
     chageSetting = $('#chageSetting').val();
+    taxSetting = $('#taxSetting').val();
+
+    console.log(taxSetting);
 
     if (isNaN(chageSetting)) {
         alert("入力されたチャージ料が数値ではありません");
@@ -177,7 +187,10 @@ function addDrink(name, amount, date) {
 function addMoney(addMoney) {
 
     money += parseInt(addMoney);
-    $('#moneyText').text(money.toLocaleString() + "円");
+    taxMoney = (money * (taxSetting / 100));
+    totalMoney = money + taxMoney;
+    $('#moneyText').text(totalMoney.toLocaleString() + "円");
+    $('#taxText').text("内税" + taxMoney.toLocaleString() + "円");
 }
 
 $(function() {
@@ -221,7 +234,7 @@ $(function() {
 
     $('#pro-drink').click(function() {
         var amount = $('#pro-amount').val();
-        addDrink("ぷろドリンク🥃", amount, new Date());
+        addDrink("ぷろドリンク🍺", amount, new Date());
     });
     $('#hino-drink').click(function() {
         var amount = $('#hino-amount').val();
@@ -229,7 +242,7 @@ $(function() {
     });
     $('#sp-drink').click(function() {
         var amount = $('#sp-amount').val();
-        addDrink("ショット🍾", amount, new Date());
+        addDrink("ショット🥃", amount, new Date());
     });
     $('#other-drink').click(function() {
         var amount = $('#other-amount').val();
