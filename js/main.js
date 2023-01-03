@@ -100,7 +100,7 @@ function startWork(startTime) {
 
         // チャージ量は切り上げ。
         tmpChargeMoney = Math.ceil(seconds / (60 * chageMinutes)) * chageSetting;
-        console.log(tmpChargeMoney);
+        // console.log(tmpChargeMoney);
 
         // チャージ料追加。
         if (chargeMoney != tmpChargeMoney) {
@@ -116,7 +116,7 @@ function startWork(startTime) {
     chageSetting = $('#chageSetting').val();
     taxSetting = $('#taxSetting').val();
 
-    console.log(taxSetting);
+    // console.log(taxSetting);
 
     if (isNaN(chageSetting)) {
         alert("入力されたチャージ料が数値ではありません");
@@ -188,7 +188,7 @@ function addDrink(name, amount, date) {
     amountDetailArray.push(amountDetail);
     jsonText = JSON.stringify(amountDetailArray);
     save(startdate, true, chageSetting, jsonText);
-    console.log(jsonText);
+    // console.log(jsonText);
 }
 
 function addMoney(addMoney) {
