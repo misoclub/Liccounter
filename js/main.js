@@ -57,6 +57,8 @@ function load() {
             $('#menu_button_0').hide();
             $('#menu_button_1').show();
             $('#menu_button_2').show();
+            $('#menu_button_3').show();
+            $('#menu_button_4').show();
         }
     }
 
@@ -224,6 +226,8 @@ $(function() {
         $('#menu_button_0').hide();
         $('#menu_button_1').show();
         $('#menu_button_2').show();
+        $('#menu_button_3').show();
+        $('#menu_button_4').show();
     });
     // 終了ボタン。
     $('#stop').click(function() {
