@@ -203,13 +203,18 @@ $(function() {
         if (!isStarted) {
             return;
         }
+
+        var result = confirm("お会計しますか？")
+        if (!result) {
+            return;
+        }
         if (!stopWork()) {
             return;
         }
         save(startdate, false, chageSetting);
-        $('#start').show();
+        // $('#start').show();
         $('#stop').hide();
-        $('#menu_button_0').show();
+        // $('#menu_button_0').show();
         $('#menu_button_1').hide();
         $('#menu_button_2').hide();
     });
