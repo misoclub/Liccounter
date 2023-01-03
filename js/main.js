@@ -302,8 +302,7 @@ $(function() {
     });
 
     $('#resultDownload').click(function() {
-        var day = dateToStr24HPad0DayOfWeek(startdate, 'YYYY年MM月DD日(WW) hh:mm');
-
+        var day = dateToStr24HPad0DayOfWeek(startdate, 'YYYY年MM月DD日(WW) hh時mm分');
         var resultText = makeResultText();
         downloadText(day + "_飲みの記録.txt", resultText);
         // downloadText(day + "_飲みの記録.json", jsonText);
