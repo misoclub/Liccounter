@@ -42,23 +42,31 @@
                 <div class="col">
                     <h3 class="text-secondary">お会計合計</h3>
                     <p class="example1" id="moneyText">0円</p>
-                    <h6 class="text-secondary">入店時刻</h6>
-                    <h6 class="text-secondary" id="startTimeText"> - </h6>
-                    <h6 class="text-secondary">経過時間</h6>
-                    <h6 class="text-secondary" id="timeText">00:00:00</h6>
+                </div>
+                <div class="row">
+                    <div class="col-md-auto">
+                        <h6 class="text-secondary">入店時刻</h6>
+                        <h6 class="text-secondary" id="startTimeText"> - </h6>
+                    </div>
+                    <div class="col">
+                        <h6 class="text-secondary">経過時間</h6>
+                        <h6 class="text-secondary" id="timeText">00:00:00</h6>
+                    </div>
                 </div>
                 <div class="w-100"></div>
                 <div class="w-100"></div>
-                <div class="col">
-                    <hr>
-                    <h6 class="text-secondary">チャージ</h6>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">¥</span>
-                        <input type="text" class="form-control" id="chageSetting" value="400" placeholder="400" type=”tel” aria-label="">
+                <div class="row">
+                    <div class="col" id="menu_button_0">
+                        <hr>
+                        <h6 class="text-secondary">チャージ 30分</h6>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">¥</span>
+                            <input type="text" class="form-control" id="chageSetting" value="400" placeholder="400" type=”tel” aria-label="">
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="row">
+            <div class="row" id="menu_button_1" style="display: none;">
                 <div class="col">
                     <button type="button" class="btn btn-outline-success btn-lg btn-block" id="pro-drink">ぷろドリンク</button>
                     <div class="input-group input-group-sm mb-3">
@@ -72,7 +80,7 @@
                     </div>
                 </div>
             </div>
-            <div class="row">
+            <div class="row" id="menu_button_2" style="display: none;">
                 <div class="col">
                     <button type="button" class="btn btn-outline-success btn-lg btn-block" id="sp-drink">シャンパン</button>
                     <div class="input-group input-group-sm mb-3">
@@ -103,7 +111,7 @@
                     <table class="table table-striped" id="processesTable">
                         <thead class="thead-dark">
                             <tr>
-                                <th class="th-sm" scope="col">時刻</th>
+                                <th scope="col-md-auto">時刻</th>
                                 <th scope="col">品名</th>
                                 <th scope="col">値段</th>
                             </tr>
@@ -112,6 +120,11 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+            <div class="row">
+                <div class="my-box mt-5"></div>
+                <div class="my-box mt-5"></div>
+                <div class="my-box mt-5"></div>
             </div>
         </form>
     </div>

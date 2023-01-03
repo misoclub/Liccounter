@@ -42,8 +42,8 @@ function load() {
     if (!saveData) {
         return;
     }
-    if (saveData["jikyu"] && saveData["jikyu"] != "") {
-        $('#jikyu').val(saveData["jikyu"]);
+    if (saveData["chageSetting"] && saveData["chageSetting"] != "") {
+        $('#chageSetting').val(saveData["chageSetting"]);
     }
     // すでに開始している。
     if (saveData["enable"] && saveData["enable"] != "") {
@@ -52,6 +52,9 @@ function load() {
             startWork(saveData["time"]);
             $('#start').hide();
             $('#stop').show();
+            $('#menu_button_0').hide();
+            $('#menu_button_1').show();
+            $('#menu_button_2').show();
         }
     }
 
@@ -140,7 +143,7 @@ function startWork(startTime) {
 function stopWork() {
     clearInterval(timerId);
     isStarted = false;
-    // alert("稼いだお金は" + money + "円でした。\nおつかれさまでした！");
+    alert("お会計は" + money + "円でした。\n今日も楽しめましたか？");
     return true;
 }
 
@@ -197,6 +200,9 @@ $(function() {
         save(startdate, true, chageSetting, jsonText);
         $('#start').hide();
         $('#stop').show();
+        $('#menu_button_0').hide();
+        $('#menu_button_1').show();
+        $('#menu_button_2').show();
     });
     // 終了ボタン。
     $('#stop').click(function() {
@@ -210,6 +216,9 @@ $(function() {
         save(startdate, false, chageSetting);
         $('#start').show();
         $('#stop').hide();
+        $('#menu_button_0').show();
+        $('#menu_button_1').hide();
+        $('#menu_button_2').hide();
     });
 
     $('#pro-drink').click(function() {
