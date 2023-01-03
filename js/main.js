@@ -229,7 +229,7 @@ $(function() {
     });
     $('#sp-drink').click(function() {
         var amount = $('#sp-amount').val();
-        addDrink("シャンパン🍾", amount, new Date());
+        addDrink("ショット🍾", amount, new Date());
     });
     $('#other-drink').click(function() {
         var amount = $('#other-amount').val();
