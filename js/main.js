@@ -133,7 +133,7 @@ function checkCharge() {
 function startWork(startTime) {
     const countUp = (IsAddDrink) => {
         // 経過時間。
-        $('#timeText').text(passTime(startdate));
+        $('#timeText').text("滞在時間：" + passTime(startdate));
 
         // チャージ料を計算。
         if (IsAddDrink) {
@@ -163,7 +163,7 @@ function startWork(startTime) {
     countUp(!isStarted);
 
     // 開始日時。
-    var day = dateToStr24HPad0DayOfWeek(startdate, 'YYYY年MM月DD日(WW) hh:mm');
+    var day = dateToStr24HPad0DayOfWeek(startdate, '入店時刻：YYYY年MM月DD日(WW) hh:mm');
     $('#startTimeText').text(day);
 
     timerId = setInterval(countUp, 1000, true);
