@@ -163,7 +163,7 @@ function startWork(startTime) {
     countUp(!isStarted);
 
     // 開始日時。
-    var day = dateToStr24HPad0DayOfWeek(startdate, 'YYYY年MM月DD日(WW)\n hh:mm');
+    var day = dateToStr24HPad0DayOfWeek(startdate, 'YYYY年MM月DD日(WW) hh:mm');
     $('#startTimeText').text(day);
 
     timerId = setInterval(countUp, 1000, true);
