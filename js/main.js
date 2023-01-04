@@ -9,7 +9,7 @@ chageSetting = 0;
 chargeMoney = 0;
 tmpChargeMoney = 0;
 // チャージの区切り分。
-chageMinutes = 30;
+chageMinutes = 1;
 
 taxSetting = 0;
 
@@ -130,11 +130,16 @@ function startWork(startTime) {
         tmpChargeMoney = Math.ceil(seconds / (60 * chageMinutes)) * chageSetting;
         // console.log(tmpChargeMoney);
 
+
+        // バックグランドに移動しつつ、何度かチャージ時刻をすぎるとおかしくなる。
+
         // チャージ料追加。
         if (chargeMoney != tmpChargeMoney) {
             var count = (chargeMoney / chageSetting) + 1;
             if (IsAddDrink) {
-                addDrink("チャージ料👯‍♀️：", chageSetting, new Date(), "回目");
+                var cargeData = new Date(startdate.getTime());
+                cargeData.setMinutes(cargeData.getMinutes() + chageMinutes * (count - 1));
+                addDrink("チャージ料👯‍♀️：", chageSetting, cargeData, "回目");
             }
             chargeMoney = tmpChargeMoney;
         }
