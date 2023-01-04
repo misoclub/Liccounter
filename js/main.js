@@ -140,7 +140,7 @@ function checkCharge() {
     for (var i = 0; i < loop; ++i) {
         var cargeData = new Date(startdate.getTime());
         cargeData.setMinutes(cargeData.getMinutes() + chargeTimeSetting * (drinkCount + i));
-        addDrink("チャージ料👯‍♀️：", chageSetting, cargeData, "回目");
+        addDrink("チャージ料👯‍♀️：", chageSetting, cargeData, "分");
     }
 }
 
@@ -228,12 +228,29 @@ function addDrink(name, amount, date, optionText) {
     var nowDatText = dateToStr24HPad0DayOfWeek(date, "hh:mm");
 
     if (optionText != "") {
-        $("#processesTable").prepend(
-            $("<tr></tr>")
-            .append($("<td class='vcenter'></td>").html(nowDatText))
-            .append($("<td class='vcenter'></td>").html(name + " " + drinkCounter[name] + optionText))
-            .append($("<td class='vcenter'></td>").html(parseInt(amount).toLocaleString() + "円"))
-        );
+        // チャージ用の超特殊処理ｗ
+        if (optionText == "分") {
+            var min = chargeTimeSetting * drinkCounter[name];
+            var hour = Math.floor(min / 60);
+
+            var text = "";
+            text += hour > 0 ? hour + "時間" : "";
+            text += min % 60;
+
+            $("#processesTable").prepend(
+                $("<tr></tr>")
+                .append($("<td class='vcenter'></td>").html(nowDatText))
+                .append($("<td class='vcenter'></td>").html(name + " " + text + optionText))
+                .append($("<td class='vcenter'></td>").html(parseInt(amount).toLocaleString() + "円"))
+            );
+        } else {
+            $("#processesTable").prepend(
+                $("<tr></tr>")
+                .append($("<td class='vcenter'></td>").html(nowDatText))
+                .append($("<td class='vcenter'></td>").html(name + " " + drinkCounter[name] + optionText))
+                .append($("<td class='vcenter'></td>").html(parseInt(amount).toLocaleString() + "円"))
+            );
+        }
     } else {
         $("#processesTable").prepend(
             $("<tr></tr>")
@@ -298,7 +315,7 @@ function makeResultText() {
     text += "\n";
 
     text += "=======================" + "\n\n"
-    text += "◆ドリンク詳細\n";
+    text += "◆支払い詳細\n";
 
     // ドリンク詳細。
     var json = JSON.parse(jsonText);
