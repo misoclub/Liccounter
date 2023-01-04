@@ -3,6 +3,9 @@ body {
     background-color: #FDFDFD;
 }
 
+html {
+    touch-action: manipulation;
+}
 
 p.example1 {
     font-size: clamp(60px, 12vw, 80px);
