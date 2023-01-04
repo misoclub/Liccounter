@@ -1,8 +1,5 @@
 'use strict';
 
-// チャージの区切り分。
-const CHARGE_MINUTES = 30;
-
 // 開始しているかのフラグ。
 var isStarted = false;
 
@@ -15,11 +12,17 @@ var timerId = 0;
 // 合計料金。
 var money = 0;
 
+//! チャージ間隔。
+var chargeTimeSetting = 0;
+
 // チャージ料金。
 var chageSetting = 0;
 
 // TAX割合。
 var taxSetting = 0;
+
+// 初期費用。
+var otherSetting = 0;
 
 // すべての注文情報を保持したJson。
 var jsonText;
@@ -59,6 +62,14 @@ function load() {
     if (saveData["liccounter_taxSetting"] && saveData["liccounter_taxSetting"] != "") {
         $('#taxSetting').val(saveData["liccounter_taxSetting"]);
         taxSetting = saveData["liccounter_taxSetting"];
+    }
+    if (saveData["liccounter_chargeTimeSetting"] && saveData["liccounter_chargeTimeSetting"] != "") {
+        $('#chargeTimeSetting').val(saveData["liccounter_chargeTimeSetting"]);
+        chargeTimeSetting = saveData["liccounter_chargeTimeSetting"];
+    }
+    if (saveData["liccounter_otherSetting"] && saveData["liccounter_otherSetting"] != "") {
+        $('#otherSetting').val(saveData["liccounter_otherSetting"]);
+        otherSetting = saveData["liccounter_otherSetting"];
     }
 
     // すでに開始している。
@@ -101,6 +112,9 @@ function save(_time, _enable, _jikyuu, jsonText) {
     saveData["liccounter_chageSetting"] = _jikyuu;
     saveData["liccounter_taxSetting"] = taxSetting;
 
+    saveData["liccounter_chargeTimeSetting"] = chargeTimeSetting;
+    saveData["liccounter_otherSetting"] = otherSetting;
+
     saveData["liccounter_jsonText"] = jsonText;
 
     store.set('liccounter_user_data', saveData);
@@ -119,13 +133,13 @@ function checkCharge() {
     var seconds = Math.floor(diff_time / 1000) + 1;
 
     // チャージの必要な回数。
-    var chargeCount = Math.ceil(seconds / (60 * CHARGE_MINUTES));
+    var chargeCount = Math.ceil(seconds / (60 * chargeTimeSetting));
     // 足りてない分足す。この間にドリンクの注文はないはずなのでスルー。
     var drinkCount = drinkCounter["チャージ料👯‍♀️："] ? drinkCounter["チャージ料👯‍♀️："] : 0;
     var loop = chargeCount - drinkCount;
     for (var i = 0; i < loop; ++i) {
         var cargeData = new Date(startdate.getTime());
-        cargeData.setMinutes(cargeData.getMinutes() + CHARGE_MINUTES * (drinkCount + i));
+        cargeData.setMinutes(cargeData.getMinutes() + chargeTimeSetting * (drinkCount + i));
         addDrink("チャージ料👯‍♀️：", chageSetting, cargeData, "回目");
     }
 }
@@ -144,6 +158,8 @@ function startWork(startTime) {
     // フォームに入力された値を取得。
     chageSetting = $('#chageSetting').val();
     taxSetting = $('#taxSetting').val();
+    chargeTimeSetting = $('#chargeTimeSetting').val();
+    otherSetting = $('#otherSetting').val();
 
     if (isNaN(chageSetting)) {
         alert("入力されたチャージ料が数値ではありません");
@@ -157,6 +173,11 @@ function startWork(startTime) {
         startdate = new Date();
     } else {
         startdate = new Date(startTime);
+    }
+
+    // 初期費用がある場合には初期費用を加算。
+    if (!isStarted && otherSetting > 0) {
+        addDrink("初期費用💰", otherSetting, startdate, "");
     }
 
     // もろもろ値初期化。
@@ -205,12 +226,22 @@ function addDrink(name, amount, date, optionText) {
     drinkCounter[name] += 1;
 
     var nowDatText = dateToStr24HPad0DayOfWeek(date, "hh:mm");
-    $("#processesTable").prepend(
-        $("<tr></tr>")
-        .append($("<td class='vcenter'></td>").html(nowDatText))
-        .append($("<td class='vcenter'></td>").html(name + " " + drinkCounter[name] + optionText))
-        .append($("<td class='vcenter'></td>").html(parseInt(amount).toLocaleString() + "円"))
-    );
+
+    if (optionText != "") {
+        $("#processesTable").prepend(
+            $("<tr></tr>")
+            .append($("<td class='vcenter'></td>").html(nowDatText))
+            .append($("<td class='vcenter'></td>").html(name + " " + drinkCounter[name] + optionText))
+            .append($("<td class='vcenter'></td>").html(parseInt(amount).toLocaleString() + "円"))
+        );
+    } else {
+        $("#processesTable").prepend(
+            $("<tr></tr>")
+            .append($("<td class='vcenter'></td>").html(nowDatText))
+            .append($("<td class='vcenter'></td>").html(name))
+            .append($("<td class='vcenter'></td>").html(parseInt(amount).toLocaleString() + "円"))
+        );
+    }
 
     // お会計情報に追加して保存。
     var amountDetail = {};
@@ -260,7 +291,7 @@ function makeResultText() {
 
     text += "◆合計杯数\n";
     for (let key in drinkCounter) {
-        if (key != "チャージ料👯‍♀️：") {
+        if (key != "チャージ料👯‍♀️：" && key != "初期費用💰") {
             text += key + ' ' + drinkCounter[key] + "杯\n";
         }
     }
