@@ -1,23 +1,34 @@
-isStarted = false;
-startdate = new Date();
+'use strict';
 
-timerId = 0;
-money = 0;
-
-chageSetting = 0;
-// チャージ量。
-chargeMoney = 0;
-tmpChargeMoney = 0;
 // チャージの区切り分。
-chageMinutes = 30;
+const CHARGE_MINUTES = 30;
 
-taxSetting = 0;
+// 開始しているかのフラグ。
+var isStarted = false;
+
+// 入店時刻。
+var startdate = new Date();
+
+// タイマーのID。
+var timerId = 0;
+
+// 合計料金。
+var money = 0;
+
+// チャージ料金。
+var chageSetting = 0;
+
+// TAX割合。
+var taxSetting = 0;
 
 // すべての注文情報を保持したJson。
 var jsonText;
-amountDetailArray = [];
 
-drinkCounter = {}
+// 注文詳細管理配列。
+var amountDetailArray = [];
+
+// 飲んだ杯数管理用。
+var drinkCounter = {}
 
 // Webからのコピペ。日付フォーマット。
 function dateToStr24HPad0DayOfWeek(date, format) {
@@ -58,7 +69,7 @@ function load() {
 
             // 注文情報をすべて読み込み。startWork後じゃないとだめ。
             if (saveData["liccounter_jsonText"] && saveData["liccounter_jsonText"] != "") {
-                json = JSON.parse(saveData["liccounter_jsonText"]);
+                var json = JSON.parse(saveData["liccounter_jsonText"]);
                 json.forEach(function(value) {
                     addDrink(value.name, value.amount, new Date(value.date), value.optionText);
                 });
@@ -108,13 +119,13 @@ function checkCharge() {
     var seconds = Math.floor(diff_time / 1000) + 1;
 
     // チャージの必要な回数。
-    var chargeCount = Math.ceil(seconds / (60 * chageMinutes));
+    var chargeCount = Math.ceil(seconds / (60 * CHARGE_MINUTES));
     // 足りてない分足す。この間にドリンクの注文はないはずなのでスルー。
     var drinkCount = drinkCounter["チャージ料👯‍♀️："] ? drinkCounter["チャージ料👯‍♀️："] : 0;
     var loop = chargeCount - drinkCount;
     for (var i = 0; i < loop; ++i) {
         var cargeData = new Date(startdate.getTime());
-        cargeData.setMinutes(cargeData.getMinutes() + chageMinutes * (drinkCount + i));
+        cargeData.setMinutes(cargeData.getMinutes() + CHARGE_MINUTES * (drinkCount + i));
         addDrink("チャージ料👯‍♀️：", chageSetting, cargeData, "回目");
     }
 }
@@ -165,8 +176,8 @@ function stopWork() {
     clearInterval(timerId);
     isStarted = false;
 
-    taxMoney = (money * (taxSetting / 100));
-    totalMoney = money + taxMoney;
+    var taxMoney = (money * (taxSetting / 100));
+    var totalMoney = money + taxMoney;
 
     alert("お会計は" + parseInt(totalMoney).toLocaleString() + "円でした。\n今日も楽しめましたか？");
 
@@ -202,7 +213,7 @@ function addDrink(name, amount, date, optionText) {
     );
 
     // お会計情報に追加して保存。
-    amountDetail = {};
+    var amountDetail = {};
     amountDetail.name = name;
     amountDetail.date = date;
     amountDetail.amount = amount;
@@ -216,8 +227,8 @@ function addDrink(name, amount, date, optionText) {
 function addMoney(addMoney) {
 
     money += parseInt(addMoney);
-    taxMoney = (money * (taxSetting / 100));
-    totalMoney = money + taxMoney;
+    var taxMoney = (money * (taxSetting / 100));
+    var totalMoney = money + taxMoney;
     $('#moneyText').text(totalMoney.toLocaleString() + "円");
     $('#taxText').text("内税" + taxMoney.toLocaleString() + "円");
 }
@@ -243,8 +254,8 @@ function makeResultText() {
     text += "◆滞在時間\n";
     text += passTime(startdate) + "\n\n";
     text += "◆支払い金額\n";
-    taxMoney = (money * (taxSetting / 100));
-    totalMoney = money + taxMoney;
+    var taxMoney = (money * (taxSetting / 100));
+    var totalMoney = money + taxMoney;
     text += parseInt(totalMoney).toLocaleString() + "円" + "(内税" + taxMoney + "円)\n\n";
 
     text += "◆合計杯数\n";
@@ -259,7 +270,7 @@ function makeResultText() {
     text += "◆ドリンク詳細\n";
 
     // ドリンク詳細。
-    json = JSON.parse(jsonText);
+    var json = JSON.parse(jsonText);
     json.forEach(function(value) {
         var date = new Date(value.date);
         text += dateToStr24HPad0DayOfWeek(date, 'hh:mm') + " " + value.name + " " + parseInt(value.amount).toLocaleString() + "円" + "\n";
