@@ -9,12 +9,10 @@ html {
 
 p.example1 {
     font-size: clamp(60px, 12vw, 80px);
-    ;
 }
 
 p.example2 {
     font-size: clamp(20px, 12vw, 30px);
-    ;
 }
 
 .footer {
