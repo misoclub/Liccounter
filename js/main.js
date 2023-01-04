@@ -55,6 +55,19 @@ function load() {
         if (saveData["liccounter_enable"]) {
             isStarted = true;
             startWork(saveData["liccounter_time"]);
+
+            // 注文情報をすべて読み込み。startWork後じゃないとだめ。
+            if (saveData["liccounter_jsonText"] && saveData["liccounter_jsonText"] != "") {
+                json = JSON.parse(saveData["liccounter_jsonText"]);
+                json.forEach(function(value) {
+                    addDrink(value.name, value.amount, new Date(value.date), value.optionText);
+                });
+            }
+
+            // addDrinkしてからじゃないとだめ。
+            checkCharge();
+
+            // もろもろ描画更新。
             $('#start').hide();
             $('#stop').show();
             $('#menu_button_0').hide();
@@ -67,19 +80,11 @@ function load() {
             $('#menu_button_7').show();
         }
     }
-
-    // 注文情報をすべて読み込み。
-    if (saveData["liccounter_jsonText"] && saveData["liccounter_jsonText"] != "") {
-        json = JSON.parse(saveData["liccounter_jsonText"]);
-        json.forEach(function(value) {
-            addDrink(value.name, value.amount, new Date(value.date), value.optionText);
-        });
-
-    }
 }
 
 function save(_time, _enable, _jikyuu, jsonText) {
     var saveData = {};
+
     saveData["liccounter_time"] = _time.getTime();
     saveData["liccounter_enable"] = _enable;
     saveData["liccounter_chageSetting"] = _jikyuu;
@@ -94,6 +99,23 @@ function initialize() {
 
     // 前回のデータ読み込み。
     load();
+}
+
+// チャージの抜け漏れチェック。
+function checkCharge() {
+    var diff_time = Date.now() - startdate.getTime();
+    var seconds = Math.floor(diff_time / 1000) + 1;
+
+    // チャージの必要な回数。
+    chargeCount = Math.ceil(seconds / (60 * chageMinutes));
+    // 足りてない分足す。この間にドリンクの注文はないはずなのでスルー。
+    var loop = chargeCount - drinkCounter["チャージ料👯‍♀️："];
+    var count = drinkCounter["チャージ料👯‍♀️："];
+    for (var i = 0; i < loop; ++i) {
+        var cargeData = new Date(startdate.getTime());
+        cargeData.setMinutes(cargeData.getMinutes() + chageMinutes * (count + i));
+        addDrink("チャージ料👯‍♀️：", chageSetting, cargeData, "回目");
+    }
 }
 
 function startWork(startTime) {
@@ -180,7 +202,6 @@ function addDrink(name, amount, date, optionText) {
         drinkCounter[name] = 0;
     }
     drinkCounter[name] += 1;
-    console.log(drinkCounter[name]);
 
     var nowDatText = dateToStr24HPad0DayOfWeek(date, "hh:mm");
     $("#processesTable").prepend(
@@ -245,7 +266,6 @@ function makeResultText() {
     text += "\n";
 
     text += "=======================" + "\n\n"
-
     text += "◆ドリンク詳細\n";
 
     // ドリンク詳細。
@@ -256,7 +276,6 @@ function makeResultText() {
     });
 
     text += "\n=======================" + "\n"
-
     text += "\n\n";
 
     return text;
