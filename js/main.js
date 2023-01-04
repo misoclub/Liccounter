@@ -9,7 +9,7 @@ chageSetting = 0;
 chargeMoney = 0;
 tmpChargeMoney = 0;
 // チャージの区切り分。
-chageMinutes = 1;
+chageMinutes = 30;
 
 taxSetting = 0;
 
@@ -103,17 +103,18 @@ function initialize() {
 
 // チャージの抜け漏れチェック。
 function checkCharge() {
+
     var diff_time = Date.now() - startdate.getTime();
     var seconds = Math.floor(diff_time / 1000) + 1;
 
     // チャージの必要な回数。
-    chargeCount = Math.ceil(seconds / (60 * chageMinutes));
+    var chargeCount = Math.ceil(seconds / (60 * chageMinutes));
     // 足りてない分足す。この間にドリンクの注文はないはずなのでスルー。
-    var loop = chargeCount - drinkCounter["チャージ料👯‍♀️："];
-    var count = drinkCounter["チャージ料👯‍♀️："];
+    var drinkCount = drinkCounter["チャージ料👯‍♀️："] ? drinkCounter["チャージ料👯‍♀️："] : 0;
+    var loop = chargeCount - drinkCount;
     for (var i = 0; i < loop; ++i) {
         var cargeData = new Date(startdate.getTime());
-        cargeData.setMinutes(cargeData.getMinutes() + chageMinutes * (count + i));
+        cargeData.setMinutes(cargeData.getMinutes() + chageMinutes * (drinkCount + i));
         addDrink("チャージ料👯‍♀️：", chageSetting, cargeData, "回目");
     }
 }
@@ -122,26 +123,10 @@ function startWork(startTime) {
     const countUp = (IsAddDrink) => {
         // 経過時間。
         $('#timeText').text(passTime(startdate));
+
         // チャージ料を計算。
-        var diff_time = Date.now() - startdate.getTime();
-        var seconds = Math.floor(diff_time / 1000) + 1;
-
-        // チャージ量は切り上げ。
-        tmpChargeMoney = Math.ceil(seconds / (60 * chageMinutes)) * chageSetting;
-        // console.log(tmpChargeMoney);
-
-
-        // バックグランドに移動しつつ、何度かチャージ時刻をすぎるとおかしくなる。
-
-        // チャージ料追加。
-        if (chargeMoney != tmpChargeMoney) {
-            var count = (chargeMoney / chageSetting) + 1;
-            if (IsAddDrink) {
-                var cargeData = new Date(startdate.getTime());
-                cargeData.setMinutes(cargeData.getMinutes() + chageMinutes * (count - 1));
-                addDrink("チャージ料👯‍♀️：", chageSetting, cargeData, "回目");
-            }
-            chargeMoney = tmpChargeMoney;
+        if (IsAddDrink) {
+            checkCharge();
         }
     }
 
@@ -286,6 +271,17 @@ function makeResultText() {
     return text;
 }
 
+function checkError(amount) {
+    if (isNaN(amount)) {
+        alert("入力された料金が数値ではありません");
+        return false;
+    } else if (amount == "") {
+        alert("料金を入力してください");
+        return false;
+    }
+    return true;
+}
+
 $(function() {
     // 開始ボタン。
     $('#start').click(function() {
@@ -340,18 +336,30 @@ $(function() {
 
     $('#pro-drink').click(function() {
         var amount = $('#pro-amount').val();
+        if (!checkError(amount)) {
+            return;
+        }
         addDrink("ぷろドリンク🍺：", amount, new Date(), "杯目");
     });
     $('#hino-drink').click(function() {
         var amount = $('#hino-amount').val();
+        if (!checkError(amount)) {
+            return;
+        }
         addDrink("ひのドリンク🍹：", amount, new Date(), "杯目");
     });
     $('#sp-drink').click(function() {
         var amount = $('#sp-amount').val();
+        if (!checkError(amount)) {
+            return;
+        }
         addDrink("ショット🥃：", amount, new Date(), "杯目");
     });
     $('#other-drink').click(function() {
         var amount = $('#other-amount').val();
+        if (!checkError(amount)) {
+            return;
+        }
         addDrink("他ドリンク🥂：", amount, new Date(), "杯目");
     });
 
