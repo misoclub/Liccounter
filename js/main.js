@@ -425,6 +425,11 @@ function makeResultText() {
     text += dateToStr24HPad0DayOfWeek(startdate, 'YYYY年MM月DD日(WW) hh:mm') + "\n\n";
     text += "◆ 来店人数\n";
     text += numSetting + "人\n\n";
+    if(firstTimeChargeTimeSetting >= 0 && firstTimeChargeMoneySetting >= 0)
+    {
+        text += "◆ 初回チャージ料金\n";
+        text += firstTimeChargeTimeSetting + "分 " +  firstTimeChargeMoneySetting + "円\n\n";
+    }
     text += "◆ チャージ料金\n";
     text += chargeTimeSetting + "分 " +  chageSetting + "円\n\n";
 
