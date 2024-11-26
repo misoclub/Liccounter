@@ -274,19 +274,41 @@ function addDrink(name, amount, date, optionText) {
     if (optionText != "") {
         // チャージ用の超特殊処理ｗ
         if (optionText == "分") {
-            var min = chargeTimeSetting * drinkCounter[name];
-            var hour = Math.floor(min / 60);
+            if(name == "初回チャージ料👯‍♀️：")
+            {
+                var min = firstTimeChargeTimeSetting;
+                var hour = Math.floor(min / 60);
 
-            var text = "";
-            text += hour > 0 ? hour + "時間" : "";
-            text += min % 60;
+                var text = "";
+                text += hour > 0 ? hour + "時間" : "";
+                text += min % 60;
+console.log("date " + date);
+console.log("syokai " + nowDatText);
+                $("#processesTable").prepend(
+                    $("<tr></tr>")
+                    .append($("<td class='vcenter'></td>").html(nowDatText))
+                    .append($("<td class='vcenter'></td>").html(name + " " + text + optionText))
+                    .append($("<td class='vcenter'></td>").html(parseInt(amount).toLocaleString() + "円"))
+                );
+            }
+            else
+            {
+                var min = Number(firstTimeChargeTimeSetting) + Number(chargeTimeSetting) * Number(drinkCounter[name]);
+                var hour = Math.floor(min / 60);
 
-            $("#processesTable").prepend(
-                $("<tr></tr>")
-                .append($("<td class='vcenter'></td>").html(nowDatText))
-                .append($("<td class='vcenter'></td>").html(name + " " + text + optionText))
-                .append($("<td class='vcenter'></td>").html(parseInt(amount).toLocaleString() + "円"))
-            );
+                var text = "";
+                text += hour > 0 ? hour + "時間" : "";
+                text += min % 60;
+console.log("11date " + date);
+console.log("tya-ji " + nowDatText);
+
+                $("#processesTable").prepend(
+                    $("<tr></tr>")
+                    .append($("<td class='vcenter'></td>").html(nowDatText))
+                    .append($("<td class='vcenter'></td>").html(name + " " + text + optionText))
+                    .append($("<td class='vcenter'></td>").html(parseInt(amount).toLocaleString() + "円"))
+                );
+            }
         } else {
             $("#processesTable").prepend(
                 $("<tr></tr>")
@@ -359,7 +381,7 @@ function makeResultText() {
 
     text += "◆ 合計杯数\n";
     for (let key in drinkCounter) {
-        if (key != "チャージ料👯‍♀️：" && key != "初期費用💰") {
+        if (key != "チャージ料👯‍♀️：" && key != "初期費用💰" && key != "初回チャージ料👯‍♀️：") {
             text += key + ' ' + drinkCounter[key] + "杯\n";
         }
     }
