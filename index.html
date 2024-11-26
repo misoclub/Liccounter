@@ -46,6 +46,12 @@
             </div>
             <div class="row" id="menu_button_6" style="display: none;">
                 <div class="col">
+                    <!-- <h6 class="text-secondary">店舗名</h6> -->
+                    <h6 class="text-secondary" id="shopNameText"> - </h6>
+                    <!-- <h6 class="text-secondary">来店人数</h6> -->
+                    <h6 class="text-secondary" id="numPeopleText"> - </h6>
+                    <!-- <h6 class="text-secondary">チャージ金額</h6> -->
+                    <h6 class="text-secondary" id="chargeText"> - </h6>
                     <!-- <h6 class="text-secondary">入店時刻</h6> -->
                     <h6 class="text-secondary" id="startTimeText"> - </h6>
                     <!-- <h6 class="text-secondary">経過時間</h6> -->
@@ -54,6 +60,11 @@
             </div>
             <div class="row">
                 <div class="col" id="menu_button_0">
+                    <hr id="menu_button_7" style="display: none;">
+                    <h6 class="text-secondary">店舗名</h6>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="shopNameSetting" value="名無しのガルバ" placeholder="名無しのガルバ" type=”tel” aria-label="">
+                    </div>
                     <hr id="menu_button_7" style="display: none;">
                     <h6 class="text-secondary">チャージ間隔</h6>
                     <div class="input-group mb-3">
@@ -75,6 +86,21 @@
                         <input type="text" class="form-control" id="otherSetting" value="0" placeholder="0" type=”tel” aria-label="">
                         <span class="input-group-text">円</span>
                     </div>
+                    <h6 class="text-secondary">人数</h6>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="numSetting" value="1" placeholder="1" type=”tel” aria-label="">
+                        <span class="input-group-text">人</span>
+                    </div>
+                    <h6 class="text-secondary">初回特殊チャージ料金</h6>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="firstTimeChargeMoneySetting" value="0" placeholder="0" type=”tel” aria-label="">
+                        <span class="input-group-text">円</span>
+                    </div>
+                    <h6 class="text-secondary">初回特殊チャージ時間</h6>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="firstTimeChargeTimeSetting" value="0" placeholder="0" type=”tel” aria-label="">
+                        <span class="input-group-text">分</span>
+                    </div>
                 </div>
             </div>
             <div class="row" id="menu_button_1" style="display: none;">
@@ -85,7 +111,7 @@
                     </div>
                 </div>
                 <div class="col">
-                    <button type="button" class="btn btn-outline-warning btn-lg btn-block" id="hino-drink">ひのドリンク</button>
+                    <button type="button" class="btn btn-outline-warning btn-lg btn-block" id="hino-drink">キャスドリ</button>
                     <div class="input-group input-group-sm mb-3">
                         <input type="text" class="form-control" id="hino-amount" aria-label="Sizing example input" value="800" placeholder="800" aria-describedby="inputGroup-sizing-sm">
                     </div>

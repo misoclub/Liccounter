@@ -24,6 +24,17 @@ var taxSetting = 0;
 // 初期費用。
 var otherSetting = 0;
 
+// 人数。
+var numSetting = 0;
+
+// 店舗名。
+var shopNameSetting = "";
+
+// 初回特別チャージ料金。
+var firstTimeChargeMoneySetting = 0;
+// 初回特別チャージ時間。
+var firstTimeChargeTimeSetting = 0;
+
 // すべての注文情報を保持したJson。
 var jsonText;
 
@@ -71,6 +82,23 @@ function load() {
         $('#otherSetting').val(saveData["liccounter_otherSetting"]);
         otherSetting = saveData["liccounter_otherSetting"];
     }
+    if (saveData["liccounter_numSetting"] && saveData["liccounter_numSetting"] != "") {
+        $('#numSetting').val(saveData["liccounter_numSetting"]);
+        numSetting = saveData["liccounter_numSetting"];
+    }
+    if (saveData["liccounter_shopNameSetting"] && saveData["liccounter_shopNameSetting"] != "") {
+        $('#shopNameSetting').val(saveData["liccounter_shopNameSetting"]);
+        numSetting = saveData["liccounter_shopNameSetting"];
+    }
+
+    if (saveData["liccounter_firstTimeChargeMoneySetting"] && saveData["liccounter_firstTimeChargeMoneySetting"] != "") {
+        $('#firstTimeChargeMoneySetting').val(saveData["liccounter_firstTimeChargeMoneySetting"]);
+        firstTimeChargeMoneySetting = saveData["liccounter_firstTimeChargeMoneySetting"];
+    }
+    if (saveData["liccounter_firstTimeChargeTimeSetting"] && saveData["liccounter_firstTimeChargeTimeSetting"] != "") {
+        $('#firstTimeChargeTimeSetting').val(saveData["liccounter_firstTimeChargeTimeSetting"]);
+        firstTimeChargeTimeSetting = saveData["liccounter_firstTimeChargeTimeSetting"];
+    }
 
     // すでに開始している。
     if (saveData["liccounter_enable"] && saveData["liccounter_enable"] != "") {
@@ -114,6 +142,12 @@ function save(_time, _enable, _jikyuu, jsonText) {
 
     saveData["liccounter_chargeTimeSetting"] = chargeTimeSetting;
     saveData["liccounter_otherSetting"] = otherSetting;
+
+    saveData["liccounter_numSetting"] = numSetting;
+    saveData["liccounter_shopNameSetting"] = shopNameSetting;
+
+    saveData["liccounter_firstTimeChargeMoneySetting"] = firstTimeChargeMoneySetting;
+    saveData["liccounter_firstTimeChargeTimeSetting"] = firstTimeChargeTimeSetting;
 
     saveData["liccounter_jsonText"] = jsonText;
 
@@ -160,6 +194,12 @@ function startWork(startTime) {
     taxSetting = $('#taxSetting').val();
     chargeTimeSetting = $('#chargeTimeSetting').val();
     otherSetting = $('#otherSetting').val();
+    numSetting = $('#numSetting').val();
+    shopNameSetting = $('#shopNameSetting').val();
+
+    firstTimeChargeMoneySetting = $('#firstTimeChargeMoneySetting').val();
+    firstTimeChargeTimeSetting = $('#firstTimeChargeTimeSetting').val();
+
 
     if (isNaN(chageSetting)) {
         alert("入力されたチャージ料が数値ではありません");
@@ -186,6 +226,10 @@ function startWork(startTime) {
     // 開始日時。
     var day = dateToStr24HPad0DayOfWeek(startdate, '入店時刻：YYYY年MM月DD日(WW) hh:mm');
     $('#startTimeText').text(day);
+
+    $('#shopNameText').text("店舗名：" + shopNameSetting);
+    $('#numPeopleText').text("来店人数：" + numSetting + "人");
+    $('#chargeText').text("チャージ料金：" + chargeTimeSetting + "分 " +  chageSetting + "円");
 
     timerId = setInterval(countUp, 1000, true);
     isStarted = true;
@@ -297,16 +341,23 @@ function downloadText(fileName, text) {
 function makeResultText() {
     var text = "";
 
-    text += "◆来店日時\n";
+    text += "◆ 店舗名\n";
+    text += shopNameSetting + "\n\n";
+    text += "◆ 来店日時\n";
     text += dateToStr24HPad0DayOfWeek(startdate, 'YYYY年MM月DD日(WW) hh:mm') + "\n\n";
-    text += "◆滞在時間\n";
+    text += "◆ 来店人数\n";
+    text += numSetting + "人\n\n";
+    text += "◆ チャージ料金\n";
+    text += chargeTimeSetting + "分 " +  chageSetting + "円\n\n";
+
+    text += "◆ 滞在時間\n";
     text += passTime(startdate) + "\n\n";
-    text += "◆支払い金額\n";
+    text += "◆ 支払い金額\n";
     var taxMoney = (money * (taxSetting / 100));
     var totalMoney = money + taxMoney;
     text += parseInt(totalMoney).toLocaleString() + "円" + "(内税" + taxMoney + "円)\n\n";
 
-    text += "◆合計杯数\n";
+    text += "◆ 合計杯数\n";
     for (let key in drinkCounter) {
         if (key != "チャージ料👯‍♀️：" && key != "初期費用💰") {
             text += key + ' ' + drinkCounter[key] + "杯\n";
@@ -315,7 +366,7 @@ function makeResultText() {
     text += "\n";
 
     text += "=======================" + "\n\n"
-    text += "◆支払い詳細\n";
+    text += "◆ 支払い詳細\n";
 
     // ドリンク詳細。
     var json = JSON.parse(jsonText);
@@ -405,7 +456,7 @@ $(function() {
         if (!checkError(amount)) {
             return;
         }
-        addDrink("ひのドリンク🍹：", amount, new Date(), "杯目");
+        addDrink("キャスドリ🍹：", amount, new Date(), "杯目");
     });
     $('#sp-drink').click(function() {
         var amount = $('#sp-amount').val();
