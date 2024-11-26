@@ -18,6 +18,9 @@ var chargeTimeSetting = 0;
 // チャージ料金。
 var chageSetting = 0;
 
+// 永続場内指名料金。
+var endlessJyonaiShimei = 0;
+
 // TAX割合。
 var taxSetting = 0;
 
@@ -102,6 +105,7 @@ function load() {
         firstTimeChargeTimeSetting = saveData["liccounter_firstTimeChargeTimeSetting"];
     }
 
+
     // すでに開始している。
     if (saveData["liccounter_enable"] && saveData["liccounter_enable"] != "") {
         if (saveData["liccounter_enable"]) {
@@ -125,6 +129,11 @@ function load() {
                         var cargeData = new Date(value.date);
                         cargeData.setTime(cargeData.getTime() + Number(chargeTimeSetting) * 60 * 1000 + 1 * 1000);
                         lastChargeDate = cargeData;
+                    }
+                    // すでに永続場内指名が発動している場合はボタンを無効化しておく。
+                    else if(value.name == "永続場内指名✌️：")
+                    {
+                        $('#endless-jyonai-shimei').prop('disabled', true);
                     }
                 });
             }
@@ -223,6 +232,12 @@ function checkCharge() {
         // チャージ終了までの時間を保存。
         cargeData.setTime(cargeData.getTime() + (Number(chargeTimeSetting) * 60 * 1000 + 1 * 1000));
         lastChargeDate = cargeData;
+
+        // 場内指名を行ってい場合はその分も加算される。
+        if(endlessJyonaiShimei > 0)
+        {
+            addDrink("永続場内指名✌️：", endlessJyonaiShimei, cargeData, "指名");
+        }
     }
 }
 
@@ -554,6 +569,26 @@ $(function() {
             return;
         }
         addDrink("他ドリンク🥂：", amount, new Date(), "杯目");
+    });
+
+    // 場内指名。押したあとは
+    $('#jyonai-shimei').click(function() {
+        var amount = $('#jyonai-shimei-amount').val();
+        if (!checkError(amount)) {
+            return;
+        }
+        addDrink("単発場内指名☝️：", amount, new Date(), "指名");
+    });
+    $('#endless-jyonai-shimei').click(function() {
+        var amount = $('#endless-jyonai-shimei-amount').val();
+        if (!checkError(amount)) {
+            return;
+        }
+        addDrink("永続場内指名✌️：", amount, new Date(), "指名");
+
+        // エンドレスの場合は一生有効にする。
+        endlessJyonaiShimei = amount;
+        $('#endless-jyonai-shimei').prop('disabled', true);
     });
 
     $('#cacheclear').click(function() {
