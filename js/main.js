@@ -49,6 +49,9 @@ var drinkCounter = {}
 
 var lastChargeDate = new Date();
 
+// 値段設定たち。保存するときにくらいしか使わない。
+var prices = []
+
 // Webからのコピペ。日付フォーマット。
 function dateToStr24HPad0DayOfWeek(date, format) {
     var weekday = ["日", "月", "火", "水", "木", "金", "土"];
@@ -103,6 +106,32 @@ function load() {
     if (saveData["liccounter_firstTimeChargeTimeSetting"] && saveData["liccounter_firstTimeChargeTimeSetting"] != "") {
         $('#firstTimeChargeTimeSetting').val(saveData["liccounter_firstTimeChargeTimeSetting"]);
         firstTimeChargeTimeSetting = saveData["liccounter_firstTimeChargeTimeSetting"];
+    }
+
+
+    if (saveData["price_my"] && saveData["price_my"] != "") {
+        $('#pro-amount').val(saveData["price_my"]);
+        prices["price_my"] = saveData["price_my"];
+    }
+    if (saveData["price_cast"] && saveData["price_cast"] != "") {
+        $('#hino-amount').val(saveData["price_cast"]);
+        prices["price_cast"] = saveData["price_cast"];
+    }
+    if (saveData["price_shot"] && saveData["price_shot"] != "") {
+        $('#sp-amount').val(saveData["price_shot"]);
+        prices["price_shot"] = saveData["price_shot"];
+    }
+    if (saveData["price_other"] && saveData["price_other"] != "") {
+        $('#other-amount').val(saveData["price_other"]);
+        prices["price_other"] = saveData["price_other"];
+    }
+    if (saveData["price_shimei"] && saveData["price_shimei"] != "") {
+        $('#jyonai-shimei-amount').val(saveData["price_shimei"]);
+        prices["price_shimei"] = saveData["price_shimei"];
+    }
+    if (saveData["price_endless_shimei"] && saveData["price_endless_shimei"] != "") {
+        $('#endless-jyonai-shimei-amount').val(saveData["price_endless_shimei"]);
+        prices["price_endless_shimei"] = saveData["price_endless_shimei"];
     }
 
 
@@ -185,6 +214,16 @@ function save(_time, _enable, _jikyuu, jsonText) {
 
     saveData["liccounter_jsonText"] = jsonText;
 
+
+    // ドリンクとかの値段達。
+    saveData["price_my"] = prices["price_my"];
+    saveData["price_cast"] = prices["price_cast"];
+    saveData["price_shot"] = prices["price_shot"];
+    saveData["price_other"] = prices["price_other"];
+    saveData["price_shimei"] = prices["price_shimei"];
+    saveData["price_endless_shimei"] = prices["price_endless_shimei"];
+
+
     store.set('liccounter_user_data', saveData);
 }
 
@@ -266,6 +305,14 @@ function startWork(startTime) {
     firstTimeChargeMoneySetting = $('#firstTimeChargeMoneySetting').val();
     firstTimeChargeTimeSetting = $('#firstTimeChargeTimeSetting').val();
 
+    // 値段取得。
+    prices["price_my"] = $('#pro-amount').val();
+    prices["price_cast"] = $('#hino-amount').val();
+    prices["price_shot"] = $('#sp-amount').val();
+    prices["price_other"] = $('#other-amount').val();
+    prices["price_shimei"] = $('#jyonai-shimei-amount').val();
+    prices["price_endless_shimei"] = $('#endless-jyonai-shimei-amount').val();
+
 
     if (isNaN(chageSetting)) {
         alert("入力されたチャージ料が数値ではありません");
@@ -295,7 +342,29 @@ function startWork(startTime) {
 
     $('#shopNameText').text("店舗名：" + shopNameSetting);
     $('#numPeopleText').text("来店人数：" + numSetting + "人");
-    $('#chargeText').text("チャージ料金：" + chargeTimeSetting + "分 " +  chageSetting + "円");
+
+    if(firstTimeChargeTimeSetting > 0 && firstTimeChargeMoneySetting > 0)
+    {
+        $('#firstChargeText').text("初回チャージ料金：" + firstTimeChargeTimeSetting + "分 " +  firstTimeChargeMoneySetting + "円");
+    }
+    else
+    {
+        $('#firstChargeText').hide();
+    }
+
+    $('#chargeText').text("通常チャージ料金：" + chargeTimeSetting + "分 " +  chageSetting + "円");
+
+    $('#taxSettingText').text("TAX：" + taxSetting + "%");
+
+    if(otherSetting > 0)
+    {
+        $('#initMoneyText').text("初期費用：" + otherSetting + "円");
+    }
+    else
+    {
+        $('#initMoneyText').hide();
+    }
+
 
     timerId = setInterval(countUp, 1000, true);
     isStarted = true;
@@ -434,19 +503,28 @@ function downloadText(fileName, text) {
 function makeResultText() {
     var text = "";
 
-    text += "◆ 店舗名\n";
-    text += shopNameSetting + "\n\n";
     text += "◆ 来店日時\n";
     text += dateToStr24HPad0DayOfWeek(startdate, 'YYYY年MM月DD日(WW) hh:mm') + "\n\n";
+    text += "◆ 店舗名\n";
+    text += shopNameSetting + "\n\n";
     text += "◆ 来店人数\n";
     text += numSetting + "人\n\n";
-    if(firstTimeChargeTimeSetting >= 0 && firstTimeChargeMoneySetting >= 0)
+    if(firstTimeChargeTimeSetting > 0 && firstTimeChargeMoneySetting > 0)
     {
         text += "◆ 初回チャージ料金\n";
         text += firstTimeChargeTimeSetting + "分 " +  firstTimeChargeMoneySetting + "円\n\n";
     }
-    text += "◆ チャージ料金\n";
+    text += "◆ 通常チャージ料金\n";
     text += chargeTimeSetting + "分 " +  chageSetting + "円\n\n";
+
+    text += "◆ TAX\n";
+    text += taxSetting + "%\n\n";
+
+    if(otherSetting > 0)
+    {
+        text += "◆ 初期費用\n";
+        text += otherSetting + "円\n\n";
+    }
 
     text += "◆ 滞在時間\n";
     text += passTime(startdate) + "\n\n";
@@ -457,7 +535,7 @@ function makeResultText() {
 
     text += "◆ 合計杯数\n";
     for (let key in drinkCounter) {
-        if (key != "チャージ料👯‍♀️：" && key != "初期費用💰" && key != "初回チャージ料👯‍♀️：") {
+        if (key == "ぷろドリンク🍺：" || key == "キャスドリ🍹：" || key == "ショット🥃：" || key == "他ドリンク🥂：") {
             text += key + ' ' + drinkCounter[key] + "杯\n";
         }
     }
@@ -544,6 +622,7 @@ $(function() {
 
     $('#pro-drink').click(function() {
         var amount = $('#pro-amount').val();
+        prices["price_my"] = amount;
         if (!checkError(amount)) {
             return;
         }
@@ -551,6 +630,7 @@ $(function() {
     });
     $('#hino-drink').click(function() {
         var amount = $('#hino-amount').val();
+        prices["price_cast"] = amount;
         if (!checkError(amount)) {
             return;
         }
@@ -558,6 +638,7 @@ $(function() {
     });
     $('#sp-drink').click(function() {
         var amount = $('#sp-amount').val();
+        prices["price_shot"] = amount;
         if (!checkError(amount)) {
             return;
         }
@@ -565,6 +646,7 @@ $(function() {
     });
     $('#other-drink').click(function() {
         var amount = $('#other-amount').val();
+        prices["price_other"] = amount;
         if (!checkError(amount)) {
             return;
         }
@@ -574,6 +656,7 @@ $(function() {
     // 場内指名。押したあとは
     $('#jyonai-shimei').click(function() {
         var amount = $('#jyonai-shimei-amount').val();
+        prices["price_shimei"] = amount;
         if (!checkError(amount)) {
             return;
         }
@@ -581,6 +664,7 @@ $(function() {
     });
     $('#endless-jyonai-shimei').click(function() {
         var amount = $('#endless-jyonai-shimei-amount').val();
+        prices["price_endless_shimei"] = amount;
         if (!checkError(amount)) {
             return;
         }
