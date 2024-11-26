@@ -174,7 +174,7 @@ function checkCharge() {
     for (var i = 0; i < loop; ++i) {
         var cargeData = new Date(startdate.getTime());
         cargeData.setMinutes(cargeData.getMinutes() + chargeTimeSetting * (drinkCount + i));
-        addDrink("チャージ料👯‍♀️：", chageSetting, cargeData, "分");
+        addDrink("チャージ料👯‍♀️：", chageSetting * numSetting, cargeData, "分");
     }
 }
 
