@@ -231,13 +231,13 @@ function startWork(startTime) {
         // 経過時間。
         $('#timeText').text("滞在時間：" + passTime(startdate));
 
-        // 次のチャージまでの時間
-        $('#lastChaegeText').text("残り時間：" + lastTime(lastChargeDate));
-
         // チャージ料を計算。
         if (IsAddDrink) {
             checkCharge();
         }
+
+        // 次のチャージまでの時間
+        $('#lastChaegeText').text("残り時間：" + lastTime(lastChargeDate));
     }
 
     // フォームに入力された値を取得。
