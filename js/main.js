@@ -44,6 +44,8 @@ var amountDetailArray = [];
 // 飲んだ杯数管理用。
 var drinkCounter = {}
 
+var lastChargeDate = new Date();
+
 // Webからのコピペ。日付フォーマット。
 function dateToStr24HPad0DayOfWeek(date, format) {
     var weekday = ["日", "月", "火", "水", "木", "金", "土"];
@@ -104,6 +106,29 @@ function load() {
     if (saveData["liccounter_enable"] && saveData["liccounter_enable"] != "") {
         if (saveData["liccounter_enable"]) {
             isStarted = true;
+
+            // 次のチャージまでの時間を先行して計算する。
+            if (saveData["liccounter_jsonText"] && saveData["liccounter_jsonText"] != "") {
+                var json = JSON.parse(saveData["liccounter_jsonText"]);
+                json.forEach(function(value) {
+                    // チャージ料金を見つけたらその次のチャージ時間までの時間の計算をしておく。
+                    if(value.name == "初回チャージ料👯‍♀️：")
+                    {
+                        // チャージが行われた時間。
+                        var cargeData = new Date(value.date);
+                        cargeData.setTime(cargeData.getTime() + Number(firstTimeChargeTimeSetting) * 60 * 1000 + 1 * 1000);
+                        lastChargeDate = cargeData;
+                    }
+                    else if(value.name == "チャージ料👯‍♀️：")
+                    {
+                        // チャージが行われた時間。
+                        var cargeData = new Date(value.date);
+                        cargeData.setTime(cargeData.getTime() + Number(chargeTimeSetting) * 60 * 1000 + 1 * 1000);
+                        lastChargeDate = cargeData;
+                    }
+                });
+            }
+
             startWork(saveData["liccounter_time"]);
 
             // 注文情報をすべて読み込み。startWork後じゃないとだめ。
@@ -166,6 +191,25 @@ function checkCharge() {
     var diff_time = Date.now() - startdate.getTime();
     var seconds = Math.floor(diff_time / 1000) + 1;
 
+    // 初回用の特殊計算を行う。
+    if(firstTimeChargeTimeSetting > 0 && firstTimeChargeMoneySetting > 0)
+    {
+        // 初回分を引いた経過時間。
+        seconds -= firstTimeChargeTimeSetting * 60;
+
+        // 初回処理済の場合はもうやんない。
+        if(!drinkCounter["初回チャージ料👯‍♀️："])
+        {
+            var cargeData = new Date(startdate.getTime());
+            cargeData.setMinutes(cargeData.getMinutes());
+            addDrink("初回チャージ料👯‍♀️：", firstTimeChargeMoneySetting * numSetting, cargeData, "分");
+
+            // チャージ終了までの時間を保存。
+            cargeData.setTime(cargeData.getTime() + (Number(firstTimeChargeTimeSetting) * 60 * 1000 + 1 * 1000));
+            lastChargeDate = cargeData;
+        }
+    }
+
     // チャージの必要な回数。
     var chargeCount = Math.ceil(seconds / (60 * chargeTimeSetting));
     // 足りてない分足す。この間にドリンクの注文はないはずなのでスルー。
@@ -173,8 +217,12 @@ function checkCharge() {
     var loop = chargeCount - drinkCount;
     for (var i = 0; i < loop; ++i) {
         var cargeData = new Date(startdate.getTime());
-        cargeData.setMinutes(cargeData.getMinutes() + chargeTimeSetting * (drinkCount + i));
+        cargeData.setMinutes(cargeData.getMinutes() + Number(chargeTimeSetting) * Number(drinkCount + i) + Number(firstTimeChargeTimeSetting));
         addDrink("チャージ料👯‍♀️：", chageSetting * numSetting, cargeData, "分");
+
+        // チャージ終了までの時間を保存。
+        cargeData.setTime(cargeData.getTime() + (Number(chargeTimeSetting) * 60 * 1000 + 1 * 1000));
+        lastChargeDate = cargeData;
     }
 }
 
@@ -182,6 +230,9 @@ function startWork(startTime) {
     const countUp = (IsAddDrink) => {
         // 経過時間。
         $('#timeText').text("滞在時間：" + passTime(startdate));
+
+        // 次のチャージまでの時間
+        $('#lastChaegeText').text("残り時間：" + lastTime(lastChargeDate));
 
         // チャージ料を計算。
         if (IsAddDrink) {
@@ -260,6 +311,16 @@ function passTime(startTime) {
     return ('0' + pass_hours).slice(-2) + ":" + ('0' + pass_minutes).slice(-2) + ":" + ('0' + pass_seconds).slice(-2);
 }
 
+function lastTime(targetTime) {
+    var diff_time = targetTime.getTime() - Date.now();
+    var seconds = Math.floor(diff_time / 1000);
+    var pass_seconds = seconds % 60;
+    var pass_minutes = Math.floor(seconds / 60) % 60;
+    var pass_hours = Math.floor(seconds / (60 * 60));
+
+    return ('0' + pass_hours).slice(-2) + ":" + ('0' + pass_minutes).slice(-2) + ":" + ('0' + pass_seconds).slice(-2);
+}
+
 function addDrink(name, amount, date, optionText) {
 
     addMoney(amount);
@@ -276,14 +337,12 @@ function addDrink(name, amount, date, optionText) {
         if (optionText == "分") {
             if(name == "初回チャージ料👯‍♀️：")
             {
-                var min = firstTimeChargeTimeSetting;
+                var min = Number(firstTimeChargeTimeSetting);
                 var hour = Math.floor(min / 60);
 
                 var text = "";
                 text += hour > 0 ? hour + "時間" : "";
                 text += min % 60;
-console.log("date " + date);
-console.log("syokai " + nowDatText);
                 $("#processesTable").prepend(
                     $("<tr></tr>")
                     .append($("<td class='vcenter'></td>").html(nowDatText))
@@ -299,9 +358,6 @@ console.log("syokai " + nowDatText);
                 var text = "";
                 text += hour > 0 ? hour + "時間" : "";
                 text += min % 60;
-console.log("11date " + date);
-console.log("tya-ji " + nowDatText);
-
                 $("#processesTable").prepend(
                     $("<tr></tr>")
                     .append($("<td class='vcenter'></td>").html(nowDatText))
