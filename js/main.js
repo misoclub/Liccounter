@@ -469,7 +469,7 @@ function addDrink(name, amount, date, optionText) {
     // お会計情報に追加して保存。
     var amountDetail = {};
     amountDetail.name = name;
-    amountDetail.date = date;
+    amountDetail.date = new Date(date);
     amountDetail.amount = amount;
     amountDetail.optionText = optionText;
     amountDetailArray.push(amountDetail);
