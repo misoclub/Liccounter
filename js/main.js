@@ -568,42 +568,7 @@ function checkError(amount) {
     return true;
 }
 
-
-function displayNotification(body, title, link, duration) {
-  link = link || null; // Link is optional
-  duration = duration || 5000; // Default duration is 5 seconds
-
-  var options = {
-    body: body
-  };
-
-  var n = new Notification(title, options);
-
-  if (link) {
-    n.onclick = function () {
-      window.open(link);
-    };
-  }
-
-  setTimeout(n.close.bind(n), duration);
-}
-
 $(function() {
-
-  if ("Notification" in window) {
-    var permission = Notification.permission;
-
-    if (permission === "denied" || permission === "granted") {
-      return;
-    }
-
-    Notification
-      .requestPermission();
-
-    displayNotification("body", "title", "https://misoclub.github.io/Liccounter/", 5000);
-  }
-
-
     // 開始ボタン。
     $('#start').click(function() {
         // 開始してたらスルー。
