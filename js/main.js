@@ -163,6 +163,7 @@ function load() {
                     else if(value.name == "永続場内指名✌️：")
                     {
                         $('#endless-jyonai-shimei').prop('disabled', true);
+                        endlessJyonaiShimei = value.amount;
                     }
                 });
             }
