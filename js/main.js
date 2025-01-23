@@ -12,10 +12,10 @@ var timerId = 0;
 // 合計料金。
 var money = 0;
 
-//! チャージ間隔。
+//! セット間隔。
 var chargeTimeSetting = 0;
 
-// チャージ料金。
+// セット料金。
 var chageSetting = 0;
 
 // 永続場内指名料金。
@@ -33,9 +33,9 @@ var numSetting = 0;
 // 店舗名。
 var shopNameSetting = "";
 
-// 初回特別チャージ料金。
+// 初回特別セット料金。
 var firstTimeChargeMoneySetting = 0;
-// 初回特別チャージ時間。
+// 初回特別セット時間。
 var firstTimeChargeTimeSetting = 0;
 
 // すべての注文情報を保持したJson。
@@ -51,6 +51,11 @@ var lastChargeDate = new Date();
 
 // 値段設定たち。保存するときにくらいしか使わない。
 var prices = []
+
+
+var presetId = 0;
+var presetCount = 0;
+var presetDataGlobal = []
 
 // Webからのコピペ。日付フォーマット。
 function dateToStr24HPad0DayOfWeek(date, format) {
@@ -68,8 +73,29 @@ function dateToStr24HPad0DayOfWeek(date, format) {
     return format;
 }
 
-function load() {
-    var saveData = store.get('liccounter_user_data');
+function load(presetId) {
+
+// console.log("load presetId:" + presetId );
+
+    // プリセット総数。
+    var preset = store.get('preset_ser_data_count');
+    if(preset)
+    {
+        presetCount = preset["presetCount"];
+        presetDataGlobal = []
+        // NOTE: IDは1番から始まるので注意。0番はプリセットではないデフォルトな数字。
+        for(var i = 1; i <= presetCount; ++i)
+        {
+            var presetData = store.get('preset_ser_data' + i);
+            if(presetData)
+            {
+                presetDataGlobal.push(presetData);
+            }
+        }
+    }
+
+    var saveData = store.get('liccounter_user_data' + presetId);
+
     // データが存在するならせっせとフォームにセットしにいく。
     if (!saveData) {
         return;
@@ -140,21 +166,21 @@ function load() {
         if (saveData["liccounter_enable"]) {
             isStarted = true;
 
-            // 次のチャージまでの時間を先行して計算する。
+            // 次のセットまでの時間を先行して計算する。
             if (saveData["liccounter_jsonText"] && saveData["liccounter_jsonText"] != "") {
                 var json = JSON.parse(saveData["liccounter_jsonText"]);
                 json.forEach(function(value) {
-                    // チャージ料金を見つけたらその次のチャージ時間までの時間の計算をしておく。
-                    if(value.name == "初回チャージ料👯‍♀️：")
+                    // セット料金を見つけたらその次のセット時間までの時間の計算をしておく。
+                    if(value.name == "初回セット料👯‍♀️：")
                     {
-                        // チャージが行われた時間。
+                        // セットが行われた時間。
                         var cargeData = new Date(value.date);
                         cargeData.setTime(cargeData.getTime() + Number(firstTimeChargeTimeSetting) * 60 * 1000 + 1 * 1000);
                         lastChargeDate = cargeData;
                     }
-                    else if(value.name == "チャージ料👯‍♀️：")
+                    else if(value.name == "セット料👯‍♀️：")
                     {
-                        // チャージが行われた時間。
+                        // セットが行われた時間。
                         var cargeData = new Date(value.date);
                         cargeData.setTime(cargeData.getTime() + Number(chargeTimeSetting) * 60 * 1000 + 1 * 1000);
                         lastChargeDate = cargeData;
@@ -192,11 +218,15 @@ function load() {
             $('#menu_button_5').show();
             $('#menu_button_6').show();
             $('#menu_button_7').show();
+            $('#menu_button_8').show();
+
+            $('#preset-save-div').show();
+            $('#preset-load-div').hide();
         }
     }
 }
 
-function save(_time, _enable, _jikyuu, jsonText) {
+function save(_time, _enable, _jikyuu, jsonText, preset) {
     var saveData = {};
 
     saveData["liccounter_time"] = _time.getTime();
@@ -225,16 +255,85 @@ function save(_time, _enable, _jikyuu, jsonText) {
     saveData["price_endless_shimei"] = prices["price_endless_shimei"];
 
 
-    store.set('liccounter_user_data', saveData);
+    store.set('liccounter_user_data' + preset, saveData);
+
+    // console.log(saveData);
+
+    // 0番はデフォで使用するのでプリセット登録は行わない。
+    if(preset == 0)
+    {
+        // console.log("ぷりせっと登録しないよ");
+        return;
+    }
+
+    // プリセット関係の保存を行う。
+    var presetCountData = {}
+    presetCountData["presetCount"] = presetCount;
+    store.set('preset_ser_data_count', presetCountData);
+
+    var presetData = {};
+    presetData["presetName"] = shopNameSetting;
+    presetData["presetId"] = preset;
+    presetData["enable"] = true;
+    store.set('preset_ser_data' + preset, presetData);
+}
+
+function deletePreset(presetId)
+{
+    var presetData = {};
+    presetData["presetName"] = shopNameSetting;
+    presetData["presetId"] = presetId;
+    presetData["enable"] = false;
+    store.set('preset_ser_data' + presetId, presetData);
 }
 
 function initialize() {
 
     // 前回のデータ読み込み。
-    load();
+    load(0);
+
+    // プリセットボタンを配置する。
+    for (var i = 0; i < presetCount; ++i)
+    {
+        // 無効化されている場合はボタン追加しない。
+        if(!presetDataGlobal[i]["enable"])
+        {
+            continue;
+        }
+
+        var name = presetDataGlobal[i]["presetName"];
+        var id = presetDataGlobal[i]["presetId"];
+
+        // ボタン要素を作成
+        var button = $('<div class="col"><button type="button" class="btn btn-secondary btn-lg btn-block" id="load-preset-' + id + '">' + name +'</button></div>');
+
+        // ボタン要素にイベントリスナーを追加
+        button.find('button').click(function() {
+        var id = $(this).attr('id').replace('load-preset-', '');
+
+            // 削除モードかどうか。
+            if ($('#myCheckbox').is(':checked'))
+            {
+                // console.log('プリセットID:', presetId, 'を無効化します');
+                deletePreset(id);
+
+                // ボタンを無効化
+                $(this).prop('disabled', true); 
+            }
+            else
+            {
+                // console.log('プリセットID:', id, 'のボタンがクリックされました');
+                load(id);
+            }
+        });
+
+        // ボタン要素をHTMLに追加
+        $('#presetButtonTarget').after(button);
+
+    }
 }
 
-// チャージの抜け漏れチェック。
+// セットの抜け漏れチェック。
 function checkCharge() {
 
     var diff_time = Date.now() - startdate.getTime();
@@ -247,29 +346,29 @@ function checkCharge() {
         seconds -= firstTimeChargeTimeSetting * 60;
 
         // 初回処理済の場合はもうやんない。
-        if(!drinkCounter["初回チャージ料👯‍♀️："])
+        if(!drinkCounter["初回セット料👯‍♀️："])
         {
             var cargeData = new Date(startdate.getTime());
             cargeData.setMinutes(cargeData.getMinutes());
-            addDrink("初回チャージ料👯‍♀️：", firstTimeChargeMoneySetting * numSetting, cargeData, "分");
+            addDrink("初回セット料👯‍♀️：", firstTimeChargeMoneySetting * numSetting, cargeData, "分");
 
-            // チャージ終了までの時間を保存。
+            // セット終了までの時間を保存。
             cargeData.setTime(cargeData.getTime() + (Number(firstTimeChargeTimeSetting) * 60 * 1000 + 1 * 1000));
             lastChargeDate = cargeData;
         }
     }
 
-    // チャージの必要な回数。
+    // セットの必要な回数。
     var chargeCount = Math.ceil(seconds / (60 * chargeTimeSetting));
     // 足りてない分足す。この間にドリンクの注文はないはずなのでスルー。
-    var drinkCount = drinkCounter["チャージ料👯‍♀️："] ? drinkCounter["チャージ料👯‍♀️："] : 0;
+    var drinkCount = drinkCounter["セット料👯‍♀️："] ? drinkCounter["セット料👯‍♀️："] : 0;
     var loop = chargeCount - drinkCount;
     for (var i = 0; i < loop; ++i) {
         var cargeData = new Date(startdate.getTime());
         cargeData.setMinutes(cargeData.getMinutes() + Number(chargeTimeSetting) * Number(drinkCount + i) + Number(firstTimeChargeTimeSetting));
-        addDrink("チャージ料👯‍♀️：", chageSetting * numSetting, cargeData, "分");
+        addDrink("セット料👯‍♀️：", chageSetting * numSetting, cargeData, "分");
 
-        // チャージ終了までの時間を保存。
+        // セット終了までの時間を保存。
         cargeData.setTime(cargeData.getTime() + (Number(chargeTimeSetting) * 60 * 1000 + 1 * 1000));
         lastChargeDate = cargeData;
 
@@ -286,12 +385,12 @@ function startWork(startTime) {
         // 経過時間。
         $('#timeText').text("滞在時間：" + passTime(startdate));
 
-        // チャージ料を計算。
+        // セット料を計算。
         if (IsAddDrink) {
             checkCharge();
         }
 
-        // 次のチャージまでの時間
+        // 次のセットまでの時間
         $('#lastChaegeText').text("残り時間：" + lastTime(lastChargeDate));
     }
 
@@ -316,10 +415,10 @@ function startWork(startTime) {
 
 
     if (isNaN(chageSetting)) {
-        alert("入力されたチャージ料が数値ではありません");
+        alert("入力されたセット料が数値ではありません");
         return false;
     } else if (chageSetting == "") {
-        alert("チャージ料を入力してください");
+        alert("セット料を入力してください");
         return false;
     }
 
@@ -346,14 +445,14 @@ function startWork(startTime) {
 
     if(firstTimeChargeTimeSetting > 0 && firstTimeChargeMoneySetting > 0)
     {
-        $('#firstChargeText').text("初回チャージ料金：" + firstTimeChargeTimeSetting + "分 " +  firstTimeChargeMoneySetting + "円");
+        $('#firstChargeText').text("初回セット料金：" + firstTimeChargeTimeSetting + "分 " +  firstTimeChargeMoneySetting + "円");
     }
     else
     {
         $('#firstChargeText').hide();
     }
 
-    $('#chargeText').text("通常チャージ料金：" + chargeTimeSetting + "分 " +  chageSetting + "円");
+    $('#chargeText').text("通常セット料金：" + chargeTimeSetting + "分 " +  chageSetting + "円");
 
     $('#taxSettingText').text("TAX：" + taxSetting + "%");
 
@@ -418,9 +517,9 @@ function addDrink(name, amount, date, optionText) {
     var nowDatText = dateToStr24HPad0DayOfWeek(date, "hh:mm");
 
     if (optionText != "") {
-        // チャージ用の超特殊処理ｗ
+        // セット用の超特殊処理ｗ
         if (optionText == "分") {
-            if(name == "初回チャージ料👯‍♀️：")
+            if(name == "初回セット料👯‍♀️：")
             {
                 var min = Number(firstTimeChargeTimeSetting);
                 var hour = Math.floor(min / 60);
@@ -475,7 +574,7 @@ function addDrink(name, amount, date, optionText) {
     amountDetail.optionText = optionText;
     amountDetailArray.push(amountDetail);
     jsonText = JSON.stringify(amountDetailArray);
-    save(startdate, true, chageSetting, jsonText);
+    save(startdate, true, chageSetting, jsonText, 0);
     // console.log(jsonText);
 }
 
@@ -512,10 +611,10 @@ function makeResultText() {
     text += numSetting + "人\n\n";
     if(firstTimeChargeTimeSetting > 0 && firstTimeChargeMoneySetting > 0)
     {
-        text += "◆ 初回チャージ料金\n";
+        text += "◆ 初回セット料金\n";
         text += firstTimeChargeTimeSetting + "分 " +  firstTimeChargeMoneySetting + "円\n\n";
     }
-    text += "◆ 通常チャージ料金\n";
+    text += "◆ 通常セット料金\n";
     text += chargeTimeSetting + "分 " +  chageSetting + "円\n\n";
 
     text += "◆ TAX\n";
@@ -579,7 +678,7 @@ $(function() {
         if (!startWork(0)) {
             return;
         }
-        save(startdate, true, chageSetting, jsonText);
+        save(startdate, true, chageSetting, jsonText, 0);
         $('#start').hide();
         $('#stop').show();
         $('#menu_button_0').hide();
@@ -590,6 +689,10 @@ $(function() {
         $('#menu_button_5').show();
         $('#menu_button_6').show();
         $('#menu_button_7').show();
+        $('#menu_button_8').show();
+
+        $('#preset-save-div').show();
+        $('#preset-load-div').hide();
     });
     // 終了ボタン。
     $('#stop').click(function() {
@@ -605,7 +708,7 @@ $(function() {
         if (!stopWork()) {
             return;
         }
-        save(startdate, false, chageSetting);
+        save(startdate, false, chageSetting, "", 0);
         // $('#start').show();
         $('#stop').hide();
         // $('#menu_button_0').show();
@@ -681,4 +784,69 @@ $(function() {
         store.clearAll();
         location.reload();
     });
+
+
+    $('#save-preset').click(function() {
+        presetCount++;
+        save(startdate, false, chageSetting, jsonText, presetCount);
+        alert("お店情報を保存しました。");
+    });
+
+
+    $('#pro-amount').change(function() {
+        var amount = $('#pro-amount').val();
+        prices["price_my"] = amount;
+        if (!checkError(amount)) {
+            return;
+        }
+        save(startdate, true, chageSetting, jsonText, 0);
+    });
+    $('#hino-amount').change(function() {
+        var amount = $('#hino-amount').val();
+        prices["price_cast"] = amount;
+        if (!checkError(amount)) {
+            return;
+        }
+        save(startdate, true, chageSetting, jsonText, 0);
+    });
+    $('#sp-amount').change(function() {
+        var amount = $('#sp-amount').val();
+        prices["price_shot"] = amount;
+        if (!checkError(amount)) {
+            return;
+        }
+        save(startdate, true, chageSetting, jsonText, 0);
+    });
+    $('#other-amount').change(function() {
+        var amount = $('#other-amount').val();
+        prices["price_other"] = amount;
+        if (!checkError(amount)) {
+            return;
+        }
+        save(startdate, true, chageSetting, jsonText, 0);
+    });
+    $('#jyonai-shimei-amount').change(function() {
+        var amount = $('#jyonai-shimei-amount').val();
+        prices["price_shimei"] = amount;
+        if (!checkError(amount)) {
+            return;
+        }
+        save(startdate, true, chageSetting, jsonText, 0);
+    });
+    $('#endless-jyonai-shimei-amount').change(function() {
+        var amount = $('#endless-jyonai-shimei-amount').val();
+        prices["price_endless_shimei"] = amount;
+        if (!checkError(amount)) {
+            return;
+        }
+        save(startdate, true, chageSetting, jsonText, 0);
+    });
+
+    $('#myCheckbox').change(function() {
+      if ($(this).is(':checked'))
+      {
+        alert("保存したお店ボタンをクリックすると削除します。\n削除すると戻せないので注意してください。");
+      }
+    });
+
 });
