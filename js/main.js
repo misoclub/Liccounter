@@ -863,4 +863,57 @@ $(function() {
       }
     });
 
+
+
+    $('#shopNameSetting').focus(function() {
+      $(this).select();
+    });
+    $('#numSetting').focus(function() {
+      $(this).select();
+    });
+    $('#firstTimeChargeTimeSetting').focus(function() {
+      $(this).select();
+    });
+    $('#firstTimeChargeMoneySetting').focus(function() {
+      $(this).select();
+    });
+    $('#chargeTimeSetting').focus(function() {
+      $(this).select();
+    });
+    $('#chageSetting').focus(function() {
+      $(this).select();
+    });
+    $('#taxSetting').focus(function() {
+      $(this).select();
+    });
+    $('#otherSetting').focus(function() {
+      $(this).select();
+    });
+    $('#pro-amount').focus(function() {
+      $(this).select();
+    });
+    $('#hino-amount').focus(function() {
+      $(this).select();
+    });
+    $('#sp-amount').focus(function() {
+      $(this).select();
+    });
+    $('#other-amount').focus(function() {
+      $(this).select();
+    });
+    $('#jyonai-shimei-amount').focus(function() {
+      $(this).select();
+    });
+    $('#endless-jyonai-shimei-amount').focus(function() {
+      $(this).select();      
+    });
+
+
+
+
+
+
+
+
+
 });
