@@ -378,15 +378,15 @@ function checkCharge() {
         cargeData.setMinutes(cargeData.getMinutes() + Number(chargeTimeSetting) * Number(drinkCount + i) + Number(firstTimeChargeTimeSetting));
         addDrink("セット料👯‍♀️：", chageSetting * numSetting, cargeData, "分");
 
-        // セット終了までの時間を保存。
-        cargeData.setTime(cargeData.getTime() + (Number(chargeTimeSetting) * 60 * 1000 + 1 * 1000));
-        lastChargeDate = cargeData;
-
         // 場内指名を行ってい場合はその分も加算される。
         if(endlessJyonaiShimei > 0)
         {
             addDrink("永続場内指名✌️：", endlessJyonaiShimei, cargeData, "指名");
         }
+
+        // セット終了までの時間を保存。
+        cargeData.setTime(cargeData.getTime() + (Number(chargeTimeSetting) * 60 * 1000 + 1 * 1000));
+        lastChargeDate = cargeData;
     }
 }
 
