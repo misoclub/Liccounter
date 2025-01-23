@@ -401,6 +401,10 @@ function startWork(startTime) {
     otherSetting = $('#otherSetting').val();
     numSetting = $('#numSetting').val();
     shopNameSetting = $('#shopNameSetting').val();
+    if(shopNameSetting == "")
+    {
+        shopNameSetting = "名無しのお店";
+    }
 
     firstTimeChargeMoneySetting = $('#firstTimeChargeMoneySetting').val();
     firstTimeChargeTimeSetting = $('#firstTimeChargeTimeSetting').val();
