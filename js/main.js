@@ -226,33 +226,43 @@ function load(presetId) {
     }
 }
 
+function checkZero(num)
+{
+    if(!num || num === "")
+    {
+        return 0;
+    }
+
+    return num;
+}
+
 function save(_time, _enable, _jikyuu, jsonText, preset) {
     var saveData = {};
 
     saveData["liccounter_time"] = _time.getTime();
     saveData["liccounter_enable"] = _enable;
-    saveData["liccounter_chageSetting"] = _jikyuu;
-    saveData["liccounter_taxSetting"] = taxSetting;
+    saveData["liccounter_chageSetting"] = checkZero(_jikyuu);
+    saveData["liccounter_taxSetting"] = checkZero(taxSetting);
 
-    saveData["liccounter_chargeTimeSetting"] = chargeTimeSetting;
-    saveData["liccounter_otherSetting"] = otherSetting;
+    saveData["liccounter_chargeTimeSetting"] = checkZero(chargeTimeSetting);
+    saveData["liccounter_otherSetting"] = checkZero(otherSetting);
 
-    saveData["liccounter_numSetting"] = numSetting;
+    saveData["liccounter_numSetting"] = checkZero(numSetting);
     saveData["liccounter_shopNameSetting"] = shopNameSetting;
 
-    saveData["liccounter_firstTimeChargeMoneySetting"] = firstTimeChargeMoneySetting;
-    saveData["liccounter_firstTimeChargeTimeSetting"] = firstTimeChargeTimeSetting;
+    saveData["liccounter_firstTimeChargeMoneySetting"] = checkZero(firstTimeChargeMoneySetting);
+    saveData["liccounter_firstTimeChargeTimeSetting"] = checkZero(firstTimeChargeTimeSetting);
 
     saveData["liccounter_jsonText"] = jsonText;
 
 
     // ドリンクとかの値段達。
-    saveData["price_my"] = prices["price_my"];
-    saveData["price_cast"] = prices["price_cast"];
-    saveData["price_shot"] = prices["price_shot"];
-    saveData["price_other"] = prices["price_other"];
-    saveData["price_shimei"] = prices["price_shimei"];
-    saveData["price_endless_shimei"] = prices["price_endless_shimei"];
+    saveData["price_my"] = checkZero(prices["price_my"]);
+    saveData["price_cast"] = checkZero(prices["price_cast"]);
+    saveData["price_shot"] = checkZero(prices["price_shot"]);
+    saveData["price_other"] = checkZero(prices["price_other"]);
+    saveData["price_shimei"] = checkZero(prices["price_shimei"]);
+    saveData["price_endless_shimei"] = checkZero(prices["price_endless_shimei"]);
 
 
     store.set('liccounter_user_data' + preset, saveData);
@@ -395,19 +405,19 @@ function startWork(startTime) {
     }
 
     // フォームに入力された値を取得。
-    chageSetting = $('#chageSetting').val();
-    taxSetting = $('#taxSetting').val();
-    chargeTimeSetting = $('#chargeTimeSetting').val();
-    otherSetting = $('#otherSetting').val();
-    numSetting = $('#numSetting').val();
+    chageSetting = checkZero($('#chageSetting').val());
+    taxSetting = checkZero($('#taxSetting').val());
+    chargeTimeSetting = checkZero($('#chargeTimeSetting').val());
+    otherSetting = checkZero($('#otherSetting').val());
+    numSetting = checkZero($('#numSetting').val());
     shopNameSetting = $('#shopNameSetting').val();
     if(shopNameSetting == "")
     {
         shopNameSetting = "名無しのお店";
     }
 
-    firstTimeChargeMoneySetting = $('#firstTimeChargeMoneySetting').val();
-    firstTimeChargeTimeSetting = $('#firstTimeChargeTimeSetting').val();
+    firstTimeChargeMoneySetting = checkZero($('#firstTimeChargeMoneySetting').val());
+    firstTimeChargeTimeSetting = checkZero($('#firstTimeChargeTimeSetting').val());
 
     // 値段取得。
     prices["price_my"] = $('#pro-amount').val();
@@ -421,8 +431,8 @@ function startWork(startTime) {
     if (isNaN(chageSetting)) {
         alert("入力されたセット料が数値ではありません");
         return false;
-    } else if (chageSetting == "") {
-        alert("セット料を入力してください");
+    } else if (chargeTimeSetting == "" || chargeTimeSetting == 0) {
+        alert("セット時間は0にできません");
         return false;
     }
 
