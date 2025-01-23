@@ -315,7 +315,7 @@ function initialize() {
         var id = presetDataGlobal[i]["presetId"];
 
         // ボタン要素を作成
-        var button = $('<div class="row"><div class="col"><button type="button" class="btn btn-secondary btn-lg btn-block" id="load-preset-' + id + '">' + name +'</button></div><div class="my-box mt-1"></div></div>');
+        var button = $('<div class="col"><button type="button" class="btn btn-secondary btn-lg btn-block" id="load-preset-' + id + '">' + name +'</button></div><div class="my-box mt-1"></div>');
 
         // ボタン要素にイベントリスナーを追加
         button.find('button').click(function() {
