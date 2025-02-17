@@ -247,15 +247,17 @@ function makeFutureTable()
         var hour = Math.floor(min / 60);
 
         var text = "〜";
-        text += hour > 0 ? hour + "時間" : "";
-        text += min % 60 + "分";
+        // text += hour > 0 ? hour + "時間" : "";
+        // text += min % 60 + "分";
+        text += hour > 0 ? hour + "h" : "";
+        text += min % 60 + "m";
 
 
         $("#futurePprocessesTable").append(
             $("<tr></tr>")
             .addClass("added-row") 
             .append($("<td class='vcenter'></td>").html(dateText))
-            .append($("<td class='vcenter'></td>").html(totalSetCount + "セット目：" + text))
+            .append($("<td class='vcenter'></td>").html(totalSetCount + "セット：" + text))
             .append($("<td class='vcenter'></td>").html(totalMoney.toLocaleString() + "円")));
     }
 }
@@ -686,7 +688,7 @@ function makeResultText() {
 
     text += "◆ 合計杯数\n";
     for (let key in drinkCounter) {
-        if (key == "ゲストドリンク🍺：" || key == "キャストドリンク🍹：" || key == "ショット🥃：" || key == "他ドリンク🥂：") {
+        if (key == "ゲスドリ🍺：" || key == "キャスドリ🍹：" || key == "ショット🥃：" || key == "他ドリンク🥂：") {
             text += key + ' ' + drinkCounter[key] + "杯\n";
         }
     }
@@ -773,7 +775,7 @@ $(function() {
         if (!checkError(amount)) {
             return;
         }
-        addDrink("ゲストドリンク🍺：", amount, new Date(), "杯目");
+        addDrink("ゲスドリ🍺：", amount, new Date(), "杯目");
     });
     $('#hino-drink').click(function() {
         var amount = $('#hino-amount').val();
@@ -781,7 +783,7 @@ $(function() {
         if (!checkError(amount)) {
             return;
         }
-        addDrink("キャストドリンク🍹：", amount, new Date(), "杯目");
+        addDrink("キャスドリ🍹：", amount, new Date(), "杯目");
     });
     $('#sp-drink').click(function() {
         var amount = $('#sp-amount').val();
