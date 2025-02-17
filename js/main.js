@@ -815,10 +815,10 @@ $(function() {
         if (!checkError(amount)) {
             return;
         }
-        addDrink("永続場内指名✌️：", amount, new Date(), "指名");
-
         // エンドレスの場合は一生有効にする。
         endlessJyonaiShimei = amount;
+        addDrink("永続場内指名✌️：", amount, new Date(), "指名");
+
         $('#endless-jyonai-shimei').prop('disabled', true);
     });
 
