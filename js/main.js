@@ -57,6 +57,8 @@ var presetId = 0;
 var presetCount = 0;
 var presetDataGlobal = []
 
+var visibleFuture = false;
+
 // Webからのコピペ。日付フォーマット。
 function dateToStr24HPad0DayOfWeek(date, format) {
     var weekday = ["日", "月", "火", "水", "木", "金", "土"];
@@ -210,19 +212,51 @@ function load(presetId) {
             // もろもろ描画更新。
             $('#start').hide();
             $('#stop').show();
-            $('#menu_button_0').hide();
-            $('#menu_button_1').show();
-            $('#menu_button_2').show();
-            $('#menu_button_3').show();
-            $('#menu_button_4').show();
-            $('#menu_button_5').show();
-            $('#menu_button_6').show();
-            $('#menu_button_7').show();
-            $('#menu_button_8').show();
-
-            $('#preset-save-div').show();
-            $('#preset-load-div').hide();
+            $('.ui_setting').hide();
+            $('.ui_runtime').show();
         }
+    }
+}
+
+// 未来テーブルを作成。
+function makeFutureTable()
+{
+    $(".added-row").remove();
+
+    // 現在のセット数を計算。
+    var firstSetCount = drinkCounter["初回セット料👯‍♀️："] ? drinkCounter["初回セット料👯‍♀️："] : 0;
+    var normalSetCount = drinkCounter["セット料👯‍♀️："] ? drinkCounter["セット料👯‍♀️："] : 0;
+    var totalSetCount = firstSetCount + normalSetCount;
+
+    for(var i = 0; i < 15; ++i)
+    {
+        totalSetCount = parseInt(totalSetCount) + 1;
+
+        var futureChargeDate = new Date(lastChargeDate);
+        futureChargeDate.setTime(futureChargeDate.getTime() + (Number(chargeTimeSetting) * 60 * 1000 + 1 * 1000) * (i));
+        var dateText = dateToStr24HPad0DayOfWeek(futureChargeDate, "hh:mm");
+
+        // 1セットにかかる費用を計算。
+        var tmpAddMoney = (parseInt(chageSetting) + parseInt(endlessJyonaiShimei)) * numSetting;
+        var tmpMoney = (money + (parseInt(tmpAddMoney) * (i + 1)));
+        var taxMoney = (tmpMoney * (taxSetting / 100));
+        var totalMoney = tmpMoney + taxMoney;
+
+
+        var min = Number(firstTimeChargeTimeSetting) * firstSetCount + Number(chargeTimeSetting) * (normalSetCount + i + 1);
+        var hour = Math.floor(min / 60);
+
+        var text = "〜";
+        text += hour > 0 ? hour + "時間" : "";
+        text += min % 60 + "分";
+
+
+        $("#futurePprocessesTable").append(
+            $("<tr></tr>")
+            .addClass("added-row") 
+            .append($("<td class='vcenter'></td>").html(dateText))
+            .append($("<td class='vcenter'></td>").html(totalSetCount + "セット目：" + text))
+            .append($("<td class='vcenter'></td>").html(totalMoney.toLocaleString() + "円")));
     }
 }
 
@@ -521,12 +555,12 @@ function lastTime(targetTime) {
 
 function addDrink(name, amount, date, optionText) {
 
-    addMoney(amount);
-
     if (!drinkCounter[name]) {
         drinkCounter[name] = 0;
     }
     drinkCounter[name] += 1;
+
+    addMoney(amount);
 
     var nowDatText = dateToStr24HPad0DayOfWeek(date, "hh:mm");
 
@@ -538,7 +572,7 @@ function addDrink(name, amount, date, optionText) {
                 var min = Number(firstTimeChargeTimeSetting);
                 var hour = Math.floor(min / 60);
 
-                var text = "";
+                var text = "〜";
                 text += hour > 0 ? hour + "時間" : "";
                 text += min % 60;
                 $("#processesTable").prepend(
@@ -553,7 +587,7 @@ function addDrink(name, amount, date, optionText) {
                 var min = Number(firstTimeChargeTimeSetting) + Number(chargeTimeSetting) * Number(drinkCounter[name]);
                 var hour = Math.floor(min / 60);
 
-                var text = "";
+                var text = "〜";
                 text += hour > 0 ? hour + "時間" : "";
                 text += min % 60;
                 $("#processesTable").prepend(
@@ -599,6 +633,9 @@ function addMoney(addMoney) {
     var totalMoney = money + taxMoney;
     $('#moneyText').text(totalMoney.toLocaleString() + "円");
     $('#taxText').text("内税" + taxMoney.toLocaleString() + "円");
+
+    // 金額が変わるときには未来予想も変化するはずなので再生成する。
+    makeFutureTable();
 }
 
 function downloadText(fileName, text) {
@@ -649,7 +686,7 @@ function makeResultText() {
 
     text += "◆ 合計杯数\n";
     for (let key in drinkCounter) {
-        if (key == "ぷろドリンク🍺：" || key == "キャスドリ🍹：" || key == "ショット🥃：" || key == "他ドリンク🥂：") {
+        if (key == "ゲストドリンク🍺：" || key == "キャストドリンク🍹：" || key == "ショット🥃：" || key == "他ドリンク🥂：") {
             text += key + ' ' + drinkCounter[key] + "杯\n";
         }
     }
@@ -695,18 +732,11 @@ $(function() {
         save(startdate, true, chageSetting, jsonText, 0);
         $('#start').hide();
         $('#stop').show();
-        $('#menu_button_0').hide();
-        $('#menu_button_1').show();
-        $('#menu_button_2').show();
-        $('#menu_button_3').show();
-        $('#menu_button_4').show();
-        $('#menu_button_5').show();
-        $('#menu_button_6').show();
-        $('#menu_button_7').show();
-        $('#menu_button_8').show();
+        $('.ui_setting').hide();
+        $('.ui_runtime').show();
 
-        $('#preset-save-div').show();
-        $('#preset-load-div').hide();
+        // いろいろ終わってからでないと計算できないので開始時には呼ぶ。
+        makeFutureTable();
     });
     // 終了ボタン。
     $('#stop').click(function() {
@@ -725,7 +755,6 @@ $(function() {
         save(startdate, false, chageSetting, "", 0);
         // $('#start').show();
         $('#stop').hide();
-        // $('#menu_button_0').show();
         $('#menu_button_1').hide();
         $('#menu_button_2').hide();
         $('#resultDownload').show();
@@ -744,7 +773,7 @@ $(function() {
         if (!checkError(amount)) {
             return;
         }
-        addDrink("ぷろドリンク🍺：", amount, new Date(), "杯目");
+        addDrink("ゲストドリンク🍺：", amount, new Date(), "杯目");
     });
     $('#hino-drink').click(function() {
         var amount = $('#hino-amount').val();
@@ -752,7 +781,7 @@ $(function() {
         if (!checkError(amount)) {
             return;
         }
-        addDrink("キャスドリ🍹：", amount, new Date(), "杯目");
+        addDrink("キャストドリンク🍹：", amount, new Date(), "杯目");
     });
     $('#sp-drink').click(function() {
         var amount = $('#sp-amount').val();
@@ -864,6 +893,20 @@ $(function() {
     });
 
 
+    $('#futureButton').click(function() {
+        if(visibleFuture)
+        {
+            $('#futureTable').hide();
+            $('#futureButton').text("お会計予報を表示");
+        }
+        else
+        {
+            $('#futureTable').show();
+            $('#futureButton').text("お会計予報を非表示");
+        }
+        visibleFuture = !visibleFuture;
+    });
+
 
     $('#shopNameSetting').focus(function() {
       $(this).select();
@@ -907,13 +950,5 @@ $(function() {
     $('#endless-jyonai-shimei-amount').focus(function() {
       $(this).select();      
     });
-
-
-
-
-
-
-
-
 
 });

@@ -38,13 +38,13 @@
     <div class="container">
         <form id="mail-form" class="py-4">
             <div class="row">
-                <div class="col" id="menu_button_5" style="display: none;">
+                <div class="col ui_runtime" style="display: none;">
                     <h3 class="text-secondary">お会計合計</h3>
                     <p class="example1" id="moneyText">0円</p>
                     <p class="example2" id="taxText">内税0円</p>
                 </div>
             </div>
-            <div class="row" id="menu_button_6" style="display: none;">
+            <div class="row ui_runtime" style="display: none;">
                 <div class="col">
                     <!-- <h6 class="text-secondary">店舗名</h6> -->
                     <h6 class="text-secondary" id="shopNameText"> - </h6>
@@ -67,8 +67,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col" id="menu_button_0">
-                    <hr id="menu_button_7" style="display: none;">
+                <div class="col ui_setting">
                     <h6 class="text-secondary">店舗名</h6>
                     <div class="input-group mb-3">
                         <input type="text" class="form-control" id="shopNameSetting" value="" placeholder="名無しのお店" aria-label="">
@@ -110,21 +109,21 @@
                     </div>
                 </div>
             </div>
-            <div class="row" id="menu_button_1" style="display: none;">
+            <div class="row ui_runtime" style="display: none;">
                 <div class="col">
-                    <button type="button" class="btn btn-outline-success btn-lg btn-block" id="pro-drink">ぷろドリンク</button>
+                    <button type="button" class="btn btn-outline-success btn-lg btn-block" id="pro-drink">ゲストドリンク</button>
                     <div class="input-group input-group-sm mb-3">
                         <input type="text" class="form-control" id="pro-amount" aria-label="Sizing example input" value="1000" placeholder="1000" inputmode="numeric" aria-describedby="inputGroup-sizing-sm">
                     </div>
                 </div>
                 <div class="col">
-                    <button type="button" class="btn btn-outline-warning btn-lg btn-block" id="hino-drink">キャスドリ</button>
+                    <button type="button" class="btn btn-outline-warning btn-lg btn-block" id="hino-drink">キャストドリンク</button>
                     <div class="input-group input-group-sm mb-3">
                         <input type="text" class="form-control" id="hino-amount" aria-label="Sizing example input" value="1000" placeholder="1000" inputmode="numeric" aria-describedby="inputGroup-sizing-sm">
                     </div>
                 </div>
             </div>
-            <div class="row" id="menu_button_2" style="display: none;">
+            <div class="row ui_runtime" style="display: none;">
                 <div class="col">
                     <button type="button" class="btn btn-outline-success btn-lg btn-block" id="sp-drink">ショット</button>
                     <div class="input-group input-group-sm mb-3">
@@ -156,7 +155,7 @@
                 </div>
             </div>
             <hr>
-            <div id="menu_button_3" style="display: none;">
+            <div class="ui_runtime" style="display: none;">
                 <div class="row">
                     <div class="col">
                         <h3 class="text-secondary">お会計詳細</h3>
@@ -169,7 +168,7 @@
                                 <tr>
                                     <th scope="col-md-auto">時刻</th>
                                     <th scope="col">品名</th>
-                                    <th scope="col">値段</th>
+                                    <th scope="col">金額</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -178,28 +177,79 @@
                     </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="my-box mt-5"></div>
-            </div>
-            <hr id="menu_button_4" style="display: none;">
-            <div class="row">
-                <div class="col">
-                    <button type="button" class="btn btn-danger btn-lg btn-block" id="stop" style="display: none;">お会計</button>
-                    <button type="button" class="btn btn-info btn-lg btn-block" id="resultDownload" style="display: none;">結果DL</button>
+
+
+            <!-- お会計ボタン -->
+            <div class="ui_runtime" style="display: none;">
+                <div class="row">
+                    <div class="my-box mt-5"></div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col">
+                        <button type="button" class="btn btn-danger btn-lg btn-block" id="stop" style="display: none;">お会計</button>
+                        <button type="button" class="btn btn-info btn-lg btn-block" id="resultDownload" style="display: none;">結果DL</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="my-box mt-5"></div>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="my-box mt-5"></div>
+
+            <!-- 未来予測ボタンとテーブル -->
+            <div class="ui_runtime" style="display: none;">
+                <hr>
+                <div class="row">
+                    <div class="col">
+                        <button type="button" class="btn btn-secondary btn-lg btn-block" id="futureButton">お会計予報を表示</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="my-box mt-3"></div>
+                </div>
+                <div id="futureTable" style="display: none;">
+                    <div class="row">
+                        <div class="col">
+                            <h3 class="text-secondary">お会計予報</h3>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <table class="table table-striped" id="futurePprocessesTable">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th scope="col-md-auto">時刻</th>
+                                        <th scope="col">セット数</th>
+                                        <th scope="col">金額</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="my-box mt-5"></div>
+                    </div>
+
+                </div>
+
             </div>
-            <hr id="menu_button_8" style="display: none;">
-            <div class="row" id="preset-save-div" style="display: none;">
-                <div class="col">
-                    <button type="button" class="btn btn-secondary btn-lg btn-block" id="save-preset">お店情報を保存</button>
+
+            <!-- お店情報保存ボタン -->
+            <div class="ui_runtime" style="display: none;">
+                <hr>
+                <div class="row ui_runtime" style="display: none;">
+                    <div class="col">
+                        <button type="button" class="btn btn-secondary btn-lg btn-block" id="save-preset">お店情報を保存</button>
+                    </div>
                 </div>
             </div>
 
-            <div class="row" id="preset-load-div">
+
+            <div class="row ui_setting">
                 <h6 class="text-secondary">保存したお店</h6>
                 <div id="presetButtonTarget">
                 </div>
