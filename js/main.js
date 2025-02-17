@@ -424,6 +424,9 @@ function checkCharge() {
         cargeData.setTime(cargeData.getTime() + (Number(chargeTimeSetting) * 60 * 1000 + 1 * 1000));
         lastChargeDate = cargeData;
     }
+
+    // addDringのあとにlastChargeDateの更新が入って結果がおかしくなるので再計算する。
+    makeFutureTable();
 }
 
 function startWork(startTime) {
