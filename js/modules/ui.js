@@ -121,16 +121,19 @@ export const UI = {
             const isGray = (index % 2 === 0);
             const rowBgColor = isGray ? '#f2f2f2' : '#ffffff'; 
 
-            const amountCell = $("<td class='vcenter'></td>");
-            const amountWrapper = $(`<div style="display: flex; align-items: center; justify-content: flex-end;"></div>`);
-            amountWrapper.append($(`<span>${Number(item.amount).toLocaleString()}円</span>`));
+            const amountCell = $("<td class='vcenter' style='padding: 0; white-space: nowrap;'></td>");
+            const amountWrapper = $(`<div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 4px 0.75rem 0.75rem; width: 100%;"></div>`);
+            amountWrapper.append($(`<span style="flex-grow: 1; text-align: right;">${Number(item.amount).toLocaleString()}円</span>`));
             
             if (canDelete) {
-                // 赤い丸背景の中に、行の色と同じバツ印を表示して「透過」しているように見せる
+                // 右端ギリギリまで寄せる
                 amountWrapper.append(
-                    $(`<span class="ml-2" style="cursor: pointer; width: 20px; height: 20px; min-width: 20px; border-radius: 50%; background-color: #dc3545; color: ${rowBgColor}; display: flex; align-items: center; justify-content: center; font-size: 10px; line-height: 1; flex-shrink: 0;" title="削除"><i class="fas fa-times"></i></span>`)
+                    $(`<span class="ml-1" style="cursor: pointer; width: 20px; height: 20px; min-width: 20px; border-radius: 50%; background-color: #dc3545; color: ${rowBgColor}; display: flex; align-items: center; justify-content: center; font-size: 10px; line-height: 1; flex-shrink: 0;" title="削除"><i class="fas fa-times"></i></span>`)
                         .click(() => window.App.deleteHistoryItem(index))
                 );
+            } else {
+                // 削除ボタンがない場合も右端の余白を調整
+                amountWrapper.append($('<div style="width: 20px; flex-shrink: 0;" class="ml-1"></div>'));
             }
             amountCell.append(amountWrapper);
 
