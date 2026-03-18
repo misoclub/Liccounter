@@ -173,12 +173,17 @@ const App = {
             const now = new Date();
             const filename = `liccounter_backup_${Utils.dateToStr(now, 'YYYYMMDD_hhmm')}.json`;
             
+            a.style.display = 'none';
             a.href = url;
             a.download = filename;
             document.body.appendChild(a);
             a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            
+            // モバイル環境で確実に動作させるため、削除を少し遅らせる
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 500);
         });
 
         $('#import-json').click((e) => {
