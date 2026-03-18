@@ -228,11 +228,11 @@ export const UI = {
             $('#confirmMessage').html(message.replace(/\n/g, '<br>'));
             
             if (showCancel) {
-                $('#confirmCancelBtn').show();
-                $('#confirmOkBtn').text("はい");
+                $('#confirmCancelBtn').show().css({ 'min-width': '100px', 'flex-shrink': '0' });
+                $('#confirmOkBtn').text("はい").css({ 'min-width': '100px', 'flex-shrink': '0' });
             } else {
                 $('#confirmCancelBtn').hide();
-                $('#confirmOkBtn').text("OK");
+                $('#confirmOkBtn').text("OK").css({ 'min-width': '100px', 'flex-shrink': '0' });
             }
 
             let result = false;
