@@ -238,7 +238,7 @@ const App = {
             let resultText = `${State.settings.shopName}\n`;
             resultText += `入店時刻: ${Utils.dateToStr(State.startDate, 'YYYY/MM/DD(WW) hh:mm')}\n`;
             resultText += `--------------------\n`;
-            
+
             State.orderHistory.forEach(item => {
                 const timeStr = Utils.dateToStr(new Date(item.date), "hh:mm");
                 let nameStr = item.name.replace('：', '');
@@ -247,22 +247,33 @@ const App = {
                 }
                 resultText += `${timeStr} - ${nameStr}: ${item.amount}円\n`;
             });
-            
+
             resultText += `--------------------\n`;
             const { total, tax } = Calculator.calculateTotalWithTax(State.totalMoney, State.settings.taxRate);
             resultText += `小計: ${State.totalMoney}円\n`;
             resultText += `TAX(${State.settings.taxRate}%): ${tax}円\n`;
             resultText += `合計: ${total}円\n`;
 
-            const blob = new Blob([resultText], { type: 'text/plain' });
+            // 文字化け対策：UTF-8のBOM（\uFEFF）を付与
+            const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+            const blob = new Blob([bom, resultText], { type: 'text/plain;charset=utf-8' });
+
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
+            a.style.display = 'none';
             a.href = url;
-            a.download = `${Utils.dateToStr(State.startDate, 'YYYYMMDD_hhmm')}_${State.settings.shopName}_お会計記録.txt`;
-            a.click();
-            URL.revokeObjectURL(url);
-        });
+            const filename = `${Utils.dateToStr(State.startDate, 'YYYYMMDD_hhmm')}_${State.settings.shopName || 'お会計記録'}.txt`;
+            a.download = filename;
 
+            document.body.appendChild(a);
+            a.click();
+
+            // モバイル環境での確実な動作のため、削除を少し遅らせる
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 500);
+        });
         $('input').focus(function() { $(this).select(); });
     },
 
