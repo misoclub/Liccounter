@@ -152,16 +152,6 @@ const App = {
             Storage.save(0, State.isStarted);
         });
 
-        // 入店時刻の編集アイコンをクリックしたときに時刻選択を開く
-        $('.edit-start-time').click(() => {
-            const input = document.getElementById('startTimeEdit');
-            if (input.showPicker) {
-                input.showPicker();
-            } else {
-                input.click();
-            }
-        });
-
         $('#save-preset').click(() => {
             this.syncStateFromForm();
             Storage.save(999, false, true);
@@ -351,10 +341,15 @@ const App = {
         if (State.isStarted) return;
         this.syncStateFromForm();
         if (State.settings.chargeTime <= 0) { alert("セット時間は0にできません"); return; }
-        State.reset(); this.syncStateFromForm();
-        State.isStarted = true; State.startDate = new Date();
+        State.reset(); 
+        this.syncStateFromForm();
+        State.isStarted = true; 
+        State.startDate = new Date(); // 現在時刻を確実にセット
         if (State.settings.initialCost > 0) { this.addDrink(CONSTANTS.ITEM_NAMES.INITIAL_COST, State.settings.initialCost, State.startDate, "", false); }
+        
+        UI.updateAll(); // 表示を最新のState（現在時刻）で更新
         this.resumeWork();
+        
         $('#start').hide(); $('#stop').show(); $('.ui_setting').hide(); $('.ui_runtime').show();
         Storage.save(0, true);
     },
