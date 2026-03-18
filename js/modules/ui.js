@@ -246,16 +246,28 @@ export const UI = {
             $('#confirmMessage').html(message.replace(/\n/g, '<br>'));
             
             const $modal = $('#confirmModal');
+            let resolved = false;
+
+            // ボタンクリック時の処理を共通化
+            const handleDecision = (result) => {
+                if (resolved) return;
+                resolved = true;
+                $modal.modal('hide');
+                resolve(result);
+            };
             
             // 「はい」ボタン
-            $('#confirmOkBtn').off('click').on('click', () => {
-                $modal.modal('hide');
-                resolve(true);
-            });
+            $('#confirmOkBtn').off('click').on('click', () => handleDecision(true));
             
-            // モーダルが閉じたとき（キャンセル等）
+            // 「キャンセル」ボタン（明示的にバインド）
+            $('#confirmCancelBtn').off('click').on('click', () => handleDecision(false));
+
+            // バツ印や画面外クリックで閉じられた場合
             $modal.off('hidden.bs.modal').on('hidden.bs.modal', () => {
-                resolve(false);
+                if (!resolved) {
+                    resolved = true;
+                    resolve(false);
+                }
             });
             
             $modal.modal('show');
