@@ -44,11 +44,8 @@ p.example2 {
 
 /* 選択中のお店のハイライト用スタイル */
 .preset-active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    border: none !important;
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
     color: white !important;
-    box-shadow: 0 4px 12px rgba(118, 75, 162, 0.4) !important;
     font-weight: bold;
-    transform: scale(1.02);
-    transition: all 0.2s ease-in-out;
 }

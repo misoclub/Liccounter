@@ -103,6 +103,7 @@ const App = {
                 item.name !== CONSTANTS.ITEM_NAMES.ENDLESS_SHIMEI
             );
             State.waiveConfig.isLatestSetWaived = false;
+            State.waiveConfig.isFirstSetWaived = false;
             State.waiveConfig.lastRequiredCount = 0;
             this.updateLastChargeDate();
             this.checkAutoCharge();
@@ -198,7 +199,7 @@ const App = {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${Utils.dateToStr(State.startDate, 'YYYYMMDD_hhmm')}_お会計記録.txt`;
+            a.download = `${Utils.dateToStr(State.startDate, 'YYYYMMDD_hhmm')}_${State.settings.shopName}_お会計記録.txt`;
             a.click();
             URL.revokeObjectURL(url);
         });
@@ -268,7 +269,7 @@ const App = {
     updatePresetHighlight() {
         $('.preset-btn').each(function() {
             const id = $(this).data('preset-id');
-            if (id === State.presets.currentId) {
+            if (id == State.presets.currentId) {
                 $(this).removeClass('btn-secondary').addClass('preset-active');
             } else {
                 $(this).removeClass('preset-active').addClass('btn-secondary');
@@ -386,7 +387,7 @@ const App = {
         const diffTime = Date.now() - State.startDate.getTime();
         let seconds = Math.floor(diffTime / 1000) + 1;
         if (State.settings.firstChargeTime > 0 && State.settings.firstChargeMoney > 0) {
-            if (State.countItem(CONSTANTS.ITEM_NAMES.FIRST_SET) === 0) {
+            if (State.countItem(CONSTANTS.ITEM_NAMES.FIRST_SET) === 0 && !State.waiveConfig.isFirstSetWaived) {
                 const chargeDate = new Date(State.startDate.getTime());
                 this.addDrink(CONSTANTS.ITEM_NAMES.FIRST_SET, State.settings.firstChargeMoney * State.settings.numPeople, chargeDate, CONSTANTS.SUFFIX.MINUTES);
             }
@@ -395,10 +396,13 @@ const App = {
         const requiredSets = Math.max(0, Math.ceil(seconds / (60 * State.settings.chargeTime)));
         if (requiredSets > State.waiveConfig.lastRequiredCount) {
             State.waiveConfig.isLatestSetWaived = false;
+            State.waiveConfig.isFirstSetWaived = false;
             State.waiveConfig.lastRequiredCount = requiredSets;
         }
-        const targetSets = State.waiveConfig.isLatestSetWaived ? requiredSets - 1 : requiredSets;
+        
         const currentSets = State.countItem(CONSTANTS.ITEM_NAMES.NORMAL_SET);
+        const targetSets = State.waiveConfig.isLatestSetWaived ? Math.min(requiredSets - 1, currentSets) : requiredSets;
+        
         if (targetSets > currentSets) {
             for (let i = currentSets; i < targetSets; i++) {
                 const chargeDate = new Date(State.startDate.getTime());
@@ -429,8 +433,12 @@ const App = {
         const item = State.orderHistory[index];
         if (!item) return;
         if (confirm("この項目を削除しますか？")) {
-            if (item.name === CONSTANTS.ITEM_NAMES.NORMAL_SET) {
-                State.waiveConfig.isLatestSetWaived = true;
+            if (item.name === CONSTANTS.ITEM_NAMES.NORMAL_SET || item.name === CONSTANTS.ITEM_NAMES.FIRST_SET) {
+                if (item.name === CONSTANTS.ITEM_NAMES.NORMAL_SET) {
+                    State.waiveConfig.isLatestSetWaived = true;
+                } else {
+                    State.waiveConfig.isFirstSetWaived = true;
+                }
                 const diffTime = Date.now() - State.startDate.getTime();
                 let seconds = Math.floor(diffTime / 1000) + 1;
                 if (State.settings.firstChargeTime > 0) seconds -= State.settings.firstChargeTime * 60;

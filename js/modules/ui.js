@@ -72,11 +72,12 @@ export const UI = {
         $("#processesTable").empty();
         const counts = {};
 
-        // 最後の通常セット料金のインデックスを探す
-        let lastNormalSetIndex = -1;
+        // 最後のセット料金（通常セットまたは初回セット）のインデックスを探す
+        let lastSetFeeIndex = -1;
         for (let i = State.orderHistory.length - 1; i >= 0; i--) {
-            if (State.orderHistory[i].name === CONSTANTS.ITEM_NAMES.NORMAL_SET) {
-                lastNormalSetIndex = i;
+            const item = State.orderHistory[i];
+            if (item.name === CONSTANTS.ITEM_NAMES.NORMAL_SET || item.name === CONSTANTS.ITEM_NAMES.FIRST_SET) {
+                lastSetFeeIndex = i;
                 break;
             }
         }
@@ -106,8 +107,8 @@ export const UI = {
             }
 
             const isSetFee = (item.name === CONSTANTS.ITEM_NAMES.NORMAL_SET || item.name === CONSTANTS.ITEM_NAMES.FIRST_SET);
-            const isLastNormalSet = (index === lastNormalSetIndex);
-            const canDelete = !isSetFee || (item.name === CONSTANTS.ITEM_NAMES.NORMAL_SET && isLastNormalSet);
+            const isLastSetFee = (index === lastSetFeeIndex);
+            const canDelete = !isSetFee || isLastSetFee;
 
             const row = $("<tr></tr>")
                 .append($("<td class='vcenter'></td>").html(timeText))

@@ -11,12 +11,13 @@ const EditApp = {
 
     init() {
         const urlParams = new URLSearchParams(window.location.search);
-        this.presetId = urlParams.get('id');
-        if (!this.presetId) {
+        const id = urlParams.get('id');
+        if (!id) {
             alert("IDが正しく指定されていません。");
             window.location.href = './';
             return;
         }
+        this.presetId = parseInt(id, 10);
         this.loadData();
         this.setupEventListeners();
     },

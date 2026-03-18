@@ -41,7 +41,8 @@ export const State = {
 
     waiveConfig: {
         lastRequiredCount: 0,
-        isLatestSetWaived: false
+        isLatestSetWaived: false,
+        isFirstSetWaived: false
     },
 
     get totalMoney() {
@@ -64,5 +65,6 @@ export const State = {
         this.presets.currentId = null; // リセット時に選択状態も解除
         this.waiveConfig.lastRequiredCount = 0;
         this.waiveConfig.isLatestSetWaived = false;
+        this.waiveConfig.isFirstSetWaived = false;
     }
 };
