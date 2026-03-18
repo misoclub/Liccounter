@@ -28,7 +28,7 @@ export const CONSTANTS = {
             "クライナー🍾：": { price: 2000, suffix: "本" },
             "イエーガー🦌：": { price: 1000, suffix: "杯" },
             "料理🍳：": { price: 1000, suffix: "品" },
-            "その他項目：": { price: 1000, suffix: "" }
+            "その他：": { price: 1000, suffix: "" }
         },
         PRICE_ENDLESS_SHIMEI: 3000
     },
