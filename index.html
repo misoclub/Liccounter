@@ -304,6 +304,27 @@
     <!-- 通知用トーストコンテナ -->
     <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 1060;"></div>
 
+    <!-- カスタム確認モーダル -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title font-weight-bold text-secondary" id="confirmTitle">確認</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body py-4" id="confirmMessage">
+                    メッセージ内容
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light shadow-0" data-dismiss="modal" id="confirmCancelBtn">キャンセル</button>
+                    <button type="button" class="btn btn-primary shadow-0" id="confirmOkBtn">はい</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 自分のJS -->
     <script type="module" src="./js/app.js"></script>
 </body>

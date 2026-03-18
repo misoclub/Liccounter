@@ -125,7 +125,10 @@ export const UI = {
                 );
             }
 
-            const row = $("<tr></tr>")
+            // 行ごとに色を変える（落ち着いたグレーと白の交互）
+            const rowClass = (index % 2 === 0) ? 'table-secondary' : '';
+
+            const row = $(`<tr class="${rowClass}"></tr>`)
                 .append($("<td class='vcenter'></td>").html(timeText))
                 .append($("<td class='vcenter'></td>").html(nameText))
                 .append(amountCell);
@@ -222,5 +225,31 @@ export const UI = {
             $toast.css('opacity', '0');
             setTimeout(() => $toast.remove(), 300);
         }, 4000);
+    },
+
+    /**
+     * カスタム確認ダイアログ（モーダル）を表示する
+     * @returns {Promise<boolean>} 「はい」ならtrue
+     */
+    showConfirm(message, title = "確認") {
+        return new Promise((resolve) => {
+            $('#confirmTitle').text(title);
+            $('#confirmMessage').html(message.replace(/\n/g, '<br>'));
+            
+            const $modal = $('#confirmModal');
+            
+            // 「はい」ボタン
+            $('#confirmOkBtn').off('click').on('click', () => {
+                $modal.modal('hide');
+                resolve(true);
+            });
+            
+            // モーダルが閉じたとき（キャンセル等）
+            $modal.off('hidden.bs.modal').on('hidden.bs.modal', () => {
+                resolve(false);
+            });
+            
+            $modal.modal('show');
+        });
     }
 };

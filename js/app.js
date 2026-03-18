@@ -81,7 +81,7 @@ const App = {
         $('#start').click(() => this.startWork());
         $('#stop').click(() => this.stopWork());
 
-        $('#startTimeEdit').change((e) => {
+        $('#startTimeEdit').change(async (e) => {
             const timeValue = e.target.value;
             if (!timeValue) return;
             const [hours, minutes] = timeValue.split(':');
@@ -105,7 +105,8 @@ const App = {
             }
 
             if (newDate > now) {
-                if (!confirm("入店時刻が現在より未来になっていますがよろしいですか？")) {
+                const ok = await UI.showConfirm("入店時刻が現在より未来になっていますがよろしいですか？", "時刻の確認");
+                if (!ok) {
                     UI.updateSettingsDisplay(); return;
                 }
             }
@@ -172,8 +173,9 @@ const App = {
             setTimeout(() => location.reload(), 1500);
         });
 
-        $('#cacheclear').click(() => {
-            if (confirm("保存してあるデータをすべて削除しますか？")) { 
+        $('#cacheclear').click(async () => {
+            const ok = await UI.showConfirm("保存してあるデータをすべて削除しますか？", "データの初期化");
+            if (ok) { 
                 Storage.clearAll(); 
                 UI.showToast("全データを削除しました。");
                 setTimeout(() => location.reload(), 1500);
@@ -213,9 +215,10 @@ const App = {
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = (event) => {
+            reader.onload = async (event) => {
                 const content = event.target.result;
-                if (confirm("現在の全てのデータが上書きされます。よろしいですか？")) {
+                const ok = await UI.showConfirm("現在の全てのデータが上書きされます。よろしいですか？", "インポートの確認");
+                if (ok) {
                     if (Storage.importAllData(content)) {
                         UI.showToast("インポートが完了しました。");
                         setTimeout(() => location.reload(), 1500);
@@ -390,16 +393,20 @@ const App = {
         $('#start').hide(); $('#stop').show(); $('.ui_setting').hide(); $('.ui_runtime').show();
     },
 
-    stopWork() {
-        if (!confirm("お会計しますか？")) return;
+    async stopWork() {
+        const ok = await UI.showConfirm("お会計しますか？", "お会計の確認");
+        if (!ok) return;
         clearInterval(State.timerId); UI.updateAll(); 
         const { total } = Calculator.calculateTotalWithTax(State.totalMoney, State.settings.taxRate);
-        alert(`お会計は ${total.toLocaleString()} 円でした。\n今日も楽しめましたか？`);
+
+        // お会計合計を表示
+        await UI.showConfirm(`お会計は ${total.toLocaleString()} 円でした。\n今日も楽しめましたか？`, "お会計完了");
 
         // 値が変更されているかチェックし、上書き保存を提案
         if (State.presets.currentId && this.hasSettingsChanged(State.presets.currentId)) {
             const presetName = State.presets.data.find(p => p.presetId === State.presets.currentId)?.presetName || "このお店";
-            if (confirm(`ドリンクの値段等の設定が「${presetName}」の保存内容から変更されています。\n変更した内容を上書き保存しますか？`)) {
+            const saveOk = await UI.showConfirm(`ドリンクの値段等の設定が「${presetName}」の保存内容から変更されています。\n変更した内容を上書き保存しますか？`, "設定の保存");
+            if (saveOk) {
                 Storage.save(State.presets.currentId, false, false);
                 UI.showToast("設定を上書き保存しました。");
             }
@@ -511,16 +518,20 @@ const App = {
         if (shouldSave) Storage.save(0, State.isStarted);
     },
 
-    addDrinkFromInput(priceKey, name, optionText) {
+    async addDrinkFromInput(priceKey, name, optionText) {
         const amount = Utils.checkZero($('#' + this.getPriceInputId(priceKey)).val());
-        if (amount === 0 && !confirm("料金が0円ですが追加しますか？")) return;
+        if (amount === 0) {
+            const ok = await UI.showConfirm("料金が0円ですが追加しますか？", "料金の確認");
+            if (!ok) return;
+        }
         this.addDrink(name, amount, new Date(), optionText);
     },
 
-    deleteHistoryItem(index) {
+    async deleteHistoryItem(index) {
         const item = State.orderHistory[index];
         if (!item) return;
-        if (confirm("この項目を削除しますか？")) {
+        const ok = await UI.showConfirm("この項目を削除しますか？", "削除の確認");
+        if (ok) {
             if (item.name === CONSTANTS.ITEM_NAMES.NORMAL_SET || item.name === CONSTANTS.ITEM_NAMES.FIRST_SET) {
                 if (item.name === CONSTANTS.ITEM_NAMES.NORMAL_SET) {
                     State.waiveConfig.isLatestSetWaived = true;

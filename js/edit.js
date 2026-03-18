@@ -77,8 +77,9 @@ const EditApp = {
         $('#edit-form').submit((e) => { e.preventDefault(); this.saveData(); });
 
         // --- 削除ボタンの処理を修正 ---
-        $('#delete-btn').off('click').click(() => {
-            if (confirm("このお店情報を完全に削除しますか？\n(削除後は復元できません)")) {
+        $('#delete-btn').off('click').click(async () => {
+            const ok = await UI.showConfirm("このお店情報を完全に削除しますか？\n(削除後は復元できません)", "情報の削除");
+            if (ok) {
                 // 1. お店の一覧データ(preset_ser_dataX)を取得
                 const presetKey = CONSTANTS.STORAGE_KEYS.PRESET_DATA_PREFIX + this.presetId;
                 const presetInfo = Storage.get(presetKey);
@@ -87,9 +88,6 @@ const EditApp = {
                     // 2. 有効フラグをオフにして保存
                     presetInfo.enable = false;
                     Storage.set(presetKey, presetInfo);
-                    
-                    // 3. 詳細データ(liccounter_user_dataX)も削除（任意ですがクリーンアップのため）
-                    // localStorage.removeItem('liccounter_user_data' + this.presetId); 
                 }
                 
                 UI.showToast("削除しました。");
@@ -115,9 +113,10 @@ const EditApp = {
             this.renderCustomItems();
         });
 
-        $('#custom-prices-area').on('click', '.remove-item-btn', (e) => {
+        $('#custom-prices-area').on('click', '.remove-item-btn', async (e) => {
             const name = $(e.currentTarget).data('name');
-            if (confirm(`「${name}」を削除しますか？`)) { delete State.prices.custom[name]; this.renderCustomItems(); }
+            const ok = await UI.showConfirm(`「${name}」を削除しますか？`, "項目の削除");
+            if (ok) { delete State.prices.custom[name]; this.renderCustomItems(); }
         });
     },
 
