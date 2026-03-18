@@ -163,6 +163,50 @@ const App = {
             if (confirm("保存してあるデータをすべて削除しますか？")) { Storage.clearAll(); location.reload(); }
         });
 
+        $('#export-json').click((e) => {
+            e.preventDefault();
+            const data = Storage.getAllData();
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const now = new Date();
+            const filename = `liccounter_backup_${Utils.dateToStr(now, 'YYYYMMDD_hhmm')}.json`;
+            
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        $('#import-json').click((e) => {
+            e.preventDefault();
+            $('#import-file').click();
+        });
+
+        $('#import-file').change((e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const content = event.target.result;
+                if (confirm("現在の全てのデータが上書きされます。よろしいですか？")) {
+                    if (Storage.importAllData(content)) {
+                        alert("インポートが完了しました。ページを再読み込みします。");
+                        location.reload();
+                    } else {
+                        alert("インポートに失敗しました。ファイル形式が正しいか確認してください。");
+                    }
+                }
+                // ファイル入力をリセット（同じファイルを再度選択できるように）
+                $(e.target).val('');
+            };
+            reader.readAsText(file);
+        });
+
         $('#futureButton').click(() => {
             State.visibleFuture = !State.visibleFuture;
             $('#futureTable').toggle(State.visibleFuture);

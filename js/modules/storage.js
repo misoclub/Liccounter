@@ -153,5 +153,33 @@ export const Storage = {
                 enable: true
             });
         }
+    },
+
+    getAllData() {
+        const data = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('liccounter') || key.startsWith('preset')) {
+                data[key] = this.get(key);
+            }
+        }
+        return data;
+    },
+
+    importAllData(jsonData) {
+        try {
+            const data = JSON.parse(jsonData);
+            // キーのバリデーション（簡易）
+            if (typeof data !== 'object') return false;
+            
+            this.clearAll();
+            Object.keys(data).forEach(key => {
+                this.set(key, data[key]);
+            });
+            return true;
+        } catch (e) {
+            console.error("Import error:", e);
+            return false;
+        }
     }
 };
