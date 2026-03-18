@@ -6,6 +6,7 @@ export const Utils = {
      * 日付を文字列に変換 (YYYY/MM/DD(WW) hh:mm:ss)
      */
     dateToStr(date, format = 'YYYY/MM/DD(WW) hh:mm:ss') {
+        if (!date) return "";
         const weekday = ["日", "月", "火", "水", "木", "金", "土"];
         
         let res = format;
@@ -20,12 +21,13 @@ export const Utils = {
     },
 
     /**
-     * 数値チェック
+     * 数値チェック（空文字やNaNを確実に0にする）
      */
     checkZero(num) {
-        if (!num || num === "" || isNaN(num)) {
+        if (num === null || num === undefined || num === "") {
             return 0;
         }
-        return Number(num);
+        const n = Number(num);
+        return isNaN(n) ? 0 : n;
     }
 };

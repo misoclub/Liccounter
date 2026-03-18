@@ -17,7 +17,6 @@ const App = {
         this.setupEventListeners();
         this.renderPresets();
         
-        // すでに開始している場合の復元処理
         if (State.isStarted) {
             this.resumeWork();
         }
@@ -48,6 +47,7 @@ const App = {
             }
         }
 
+        this.updateLastChargeDate();
         UI.syncFormFromState();
         UI.updateAll();
     },
@@ -76,7 +76,15 @@ const App = {
 
             State.startDate = newDate;
             
-            // 入店時刻が変わったため、自動料金を再チェック
+            // 入店時刻が変わったので、セット料金の計算をやり直す
+            // すでにある「セット料金」と「永続指名」を履歴から削除して再生成
+            State.orderHistory = State.orderHistory.filter(item => 
+                item.name !== CONSTANTS.ITEM_NAMES.FIRST_SET && 
+                item.name !== CONSTANTS.ITEM_NAMES.NORMAL_SET &&
+                item.name !== CONSTANTS.ITEM_NAMES.ENDLESS_SHIMEI
+            );
+            
+            this.updateLastChargeDate();
             this.checkAutoCharge();
             UI.updateAll();
             Storage.save(0, State.isStarted);
@@ -95,7 +103,6 @@ const App = {
             $('#endless-jyonai-shimei').prop('disabled', true);
         });
 
-        // 設定変更時の自動保存とUI更新
         const configInputs = [
             '#pro-amount', '#hino-amount', '#sp-amount', '#other-amount', 
             '#jyonai-shimei-amount', '#endless-jyonai-shimei-amount',
@@ -104,7 +111,7 @@ const App = {
         ];
         $(configInputs.join(',')).change(() => {
             this.syncStateFromForm();
-            UI.updateAll(); // 変更された税率や人数を画面に反映
+            UI.updateAll();
             Storage.save(0, State.isStarted);
         });
 
@@ -218,7 +225,7 @@ const App = {
             $('#timeText').text("滞在時間：" + Calculator.getPassTimeText(State.startDate));
             this.checkAutoCharge();
             $('#lastChaegeText').text("残り時間：" + Calculator.getLastTimeText(State.lastChargeDate));
-            UI.updateMoneyDisplay(); // 金額を毎秒更新するようにして設定変更を即時反映
+            UI.updateMoneyDisplay();
         };
         updateTick();
         State.timerId = setInterval(updateTick, 1000);
@@ -233,17 +240,36 @@ const App = {
         if (!confirm("お会計しますか？")) return;
         clearInterval(State.timerId);
         State.isStarted = false;
-        
-        // 最終的な金額を再計算
         UI.updateAll(); 
-        
         const { total } = Calculator.calculateTotalWithTax(State.totalMoney, State.settings.taxRate);
         alert(`お会計は ${total.toLocaleString()} 円でした。\n今日も楽しめましたか？`);
-        
         Storage.save(0, false);
         $('#stop').hide();
         $('#menu_button_1, #menu_button_2').hide();
         $('#resultDownload').show();
+    },
+
+    /**
+     * 履歴から最後のセット終了時刻を算出し、State.lastChargeDate を更新
+     */
+    updateLastChargeDate() {
+        // デフォルトは開始時刻
+        let lastDate = new Date(State.startDate.getTime());
+        
+        // 履歴をスキャンして最後のセットを探す
+        State.orderHistory.forEach(item => {
+            if (item.name === CONSTANTS.ITEM_NAMES.FIRST_SET) {
+                const d = new Date(item.date);
+                d.setTime(d.getTime() + (State.settings.firstChargeTime * 60 * 1000 + 1000));
+                if (d > lastDate) lastDate = d;
+            } else if (item.name === CONSTANTS.ITEM_NAMES.NORMAL_SET) {
+                const d = new Date(item.date);
+                d.setTime(d.getTime() + (State.settings.chargeTime * 60 * 1000 + 1000));
+                if (d > lastDate) lastDate = d;
+            }
+        });
+        
+        State.lastChargeDate = lastDate;
     },
 
     checkAutoCharge() {
@@ -254,8 +280,6 @@ const App = {
             if (State.countItem(CONSTANTS.ITEM_NAMES.FIRST_SET) === 0) {
                 const chargeDate = new Date(State.startDate.getTime());
                 this.addDrink(CONSTANTS.ITEM_NAMES.FIRST_SET, State.settings.firstChargeMoney * State.settings.numPeople, chargeDate, CONSTANTS.SUFFIX.MINUTES);
-                chargeDate.setTime(chargeDate.getTime() + (State.settings.firstChargeTime * 60 * 1000 + 1000));
-                State.lastChargeDate = chargeDate;
             }
             seconds -= State.settings.firstChargeTime * 60;
         }
@@ -267,15 +291,17 @@ const App = {
             for (let i = currentSets; i < requiredSets; i++) {
                 const chargeDate = new Date(State.startDate.getTime());
                 chargeDate.setMinutes(chargeDate.getMinutes() + (State.settings.chargeTime * i) + State.settings.firstChargeTime);
+                
                 this.addDrink(CONSTANTS.ITEM_NAMES.NORMAL_SET, State.settings.chargeMoney * State.settings.numPeople, chargeDate, CONSTANTS.SUFFIX.MINUTES);
+
                 if (State.settings.endlessJyonaiShimei > 0) {
                     this.addDrink(CONSTANTS.ITEM_NAMES.ENDLESS_SHIMEI, State.settings.endlessJyonaiShimei, chargeDate, CONSTANTS.SUFFIX.NOMINATION);
                 }
-                chargeDate.setTime(chargeDate.getTime() + (State.settings.chargeTime * 60 * 1000 + 1000));
-                State.lastChargeDate = chargeDate;
             }
-            UI.updateFutureTable();
         }
+        
+        this.updateLastChargeDate();
+        UI.updateFutureTable();
     },
 
     addDrink(name, amount, date, optionText, shouldSave = true) {
@@ -293,6 +319,7 @@ const App = {
     deleteHistoryItem(index) {
         if (confirm("この項目を削除しますか？")) {
             State.orderHistory.splice(index, 1);
+            this.updateLastChargeDate();
             UI.updateAll();
             Storage.save(0, State.isStarted);
         }

@@ -2,6 +2,23 @@
  * アプリケーション内で使用する定数
  */
 export const CONSTANTS = {
+    // 標準のデフォルト値
+    DEFAULTS: {
+        SHOP_NAME: "名無しのお店",
+        NUM_PEOPLE: 1,
+        FIRST_CHARGE_TIME: 0,
+        FIRST_CHARGE_MONEY: 0,
+        CHARGE_TIME: 50,
+        CHARGE_MONEY: 3000,
+        TAX_RATE: 20,
+        INITIAL_COST: 0,
+        PRICE_MY: 1000,
+        PRICE_CAST: 1000,
+        PRICE_SHOT: 1500,
+        PRICE_OTHER: 3000,
+        PRICE_SHIMEI: 2000,
+        PRICE_ENDLESS_SHIMEI: 3000
+    },
     ITEM_NAMES: {
         FIRST_SET: "初回セット料👯‍♀️：",
         NORMAL_SET: "セット料👯‍♀️：",
