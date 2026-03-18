@@ -208,69 +208,53 @@ export const UI = {
     },
 
     /**
-     * トースト通知を表示する（Bootstrap/MDB風スタイル）
-     */
-    showToast(message, type = 'info') {
-        const bgClass = type === 'danger' ? 'bg-danger' : (type === 'warning' ? 'bg-warning text-dark' : 'bg-primary');
-        const toastId = 'toast-' + Date.now();
-        const toastHtml = `
-            <div id="${toastId}" class="toast align-items-center text-white ${bgClass} border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true" style="display: block; min-width: 250px; opacity: 0; transition: opacity 0.3s ease-in-out; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                <div class="d-flex">
-                    <div class="toast-body p-3" style="font-size: 0.95rem; font-weight: 500;">
-                        ${message.replace(/\n/g, '<br>')}
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        const $toast = $(toastHtml);
-        $('#toast-container').append($toast);
-        
-        // フェードイン
-        setTimeout(() => $toast.css('opacity', '1'), 10);
-        
-        // 4秒後に自動消去
-        setTimeout(() => {
-            $toast.css('opacity', '0');
-            setTimeout(() => $toast.remove(), 300);
-        }, 4000);
-    },
-
-    /**
      * カスタム確認ダイアログ（モーダル）を表示する
+     * @param {string} message メッセージ
+     * @param {string} title タイトル
+     * @param {boolean} showCancel キャンセルボタンを表示するか（falseならOKのみのアラート）
      * @returns {Promise<boolean>} 「はい」ならtrue
      */
-    showConfirm(message, title = "確認") {
+    showConfirm(message, title = "確認", showCancel = true) {
         return new Promise((resolve) => {
+            const $modal = $('#confirmModal');
+            
+            // 前のイベントを確実にクリア
+            $('#confirmOkBtn').off('click');
+            $('#confirmCancelBtn').off('click');
+            $('#confirmCloseBtn').off('click');
+            $modal.off('hidden.bs.modal');
+
             $('#confirmTitle').text(title);
             $('#confirmMessage').html(message.replace(/\n/g, '<br>'));
             
-            const $modal = $('#confirmModal');
-            let resolved = false;
+            if (showCancel) {
+                $('#confirmCancelBtn').show();
+                $('#confirmOkBtn').text("はい");
+            } else {
+                $('#confirmCancelBtn').hide();
+                $('#confirmOkBtn').text("OK");
+            }
 
-            // ボタンクリック時の処理を共通化
-            const handleDecision = (result) => {
-                if (resolved) return;
-                resolved = true;
-                $modal.modal('hide');
+            let result = false;
+
+            // ボタンクリック時は結果をセットして閉じるだけ
+            $('#confirmOkBtn').on('click', () => { result = true; $modal.modal('hide'); });
+            $('#confirmCancelBtn').on('click', () => { result = false; $modal.modal('hide'); });
+            $('#confirmCloseBtn').on('click', () => { result = false; $modal.modal('hide'); });
+
+            // 完全に閉じ終わったタイミングで Promise を解決する
+            $modal.on('hidden.bs.modal', () => {
                 resolve(result);
-            };
-            
-            // 「はい」ボタン
-            $('#confirmOkBtn').off('click').on('click', () => handleDecision(true));
-            
-            // 「キャンセル」ボタン（明示的にバインド）
-            $('#confirmCancelBtn').off('click').on('click', () => handleDecision(false));
-
-            // バツ印や画面外クリックで閉じられた場合
-            $modal.off('hidden.bs.modal').on('hidden.bs.modal', () => {
-                if (!resolved) {
-                    resolved = true;
-                    resolve(false);
-                }
             });
             
             $modal.modal('show');
         });
+    },
+
+    /**
+     * OKボタンのみのアラートを表示する
+     */
+    showAlert(message, title = "通知") {
+        return this.showConfirm(message, title, false);
     }
 };

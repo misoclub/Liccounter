@@ -166,19 +166,19 @@ const App = {
             Storage.save(0, State.isStarted);
         });
 
-        $('#save-preset').click(() => {
+        $('#save-preset').click(async () => {
             this.syncStateFromForm();
             Storage.save(999, false, true);
-            UI.showToast("お店情報を保存しました。");
-            setTimeout(() => location.reload(), 1500);
+            await UI.showAlert("お店情報を保存しました。");
+            location.reload();
         });
 
         $('#cacheclear').click(async () => {
             const ok = await UI.showConfirm("保存してあるデータをすべて削除しますか？", "データの初期化");
             if (ok) { 
                 Storage.clearAll(); 
-                UI.showToast("全データを削除しました。");
-                setTimeout(() => location.reload(), 1500);
+                await UI.showAlert("全データを削除しました。");
+                location.reload();
             }
         });
 
@@ -220,10 +220,10 @@ const App = {
                 const ok = await UI.showConfirm("現在の全てのデータが上書きされます。よろしいですか？", "インポートの確認");
                 if (ok) {
                     if (Storage.importAllData(content)) {
-                        UI.showToast("インポートが完了しました。");
-                        setTimeout(() => location.reload(), 1500);
+                        await UI.showAlert("インポートが完了しました。");
+                        location.reload();
                     } else {
-                        UI.showToast("インポートに失敗しました。ファイル形式を確認してください。", "danger");
+                        await UI.showAlert("インポートに失敗しました。ファイル形式を確認してください。", "エラー");
                     }
                 }
                 // ファイル入力をリセット（同じファイルを再度選択できるように）
@@ -359,11 +359,11 @@ const App = {
             }
         });
     },
-    startWork() {
+    async startWork() {
         if (State.isStarted) return;
         this.syncStateFromForm();
         if (State.settings.chargeTime <= 0) { 
-            UI.showToast("セット時間は0にできません", "warning"); 
+            await UI.showAlert("セット時間は0にできません", "入力エラー"); 
             return; 
         }
         State.reset(); 
@@ -399,8 +399,8 @@ const App = {
         clearInterval(State.timerId); UI.updateAll(); 
         const { total } = Calculator.calculateTotalWithTax(State.totalMoney, State.settings.taxRate);
 
-        // お会計合計を表示
-        await UI.showConfirm(`お会計は ${total.toLocaleString()} 円でした。\n今日も楽しめましたか？`, "お会計完了");
+        // お会計合計を表示（OKのみの通知として表示）
+        await UI.showAlert(`お会計は ${total.toLocaleString()} 円でした。\n今日も楽しめましたか？`, "お会計完了");
 
         // 値が変更されているかチェックし、上書き保存を提案
         if (State.presets.currentId && this.hasSettingsChanged(State.presets.currentId)) {
@@ -408,7 +408,7 @@ const App = {
             const saveOk = await UI.showConfirm(`ドリンクの値段等の設定が「${presetName}」の保存内容から変更されています。\n変更した内容を上書き保存しますか？`, "設定の保存");
             if (saveOk) {
                 Storage.save(State.presets.currentId, false, false);
-                UI.showToast("設定を上書き保存しました。");
+                await UI.showAlert("設定を上書き保存しました。");
             }
         }
 

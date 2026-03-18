@@ -14,8 +14,9 @@ const EditApp = {
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
         if (!id) {
-            UI.showToast("IDが正しく指定されていません。", "danger");
-            setTimeout(() => window.location.href = './', 1500);
+            UI.showAlert("IDが正しく指定されていません。", "エラー").then(() => {
+                window.location.href = './';
+            });
             return;
         }
         this.presetId = parseInt(id, 10);
@@ -90,12 +91,12 @@ const EditApp = {
                     Storage.set(presetKey, presetInfo);
                 }
                 
-                UI.showToast("削除しました。");
-                setTimeout(() => window.location.href = './', 1500);
+                await UI.showAlert("削除しました。");
+                window.location.href = './';
             }
         });
 
-        $('#add-new-item-btn').click(() => {
+        $('#add-new-item-btn').click(async () => {
             const nameInput = $('#new-item-name');
             const priceInput = $('#new-item-price');
             const suffixInput = $('#new-item-suffix');
@@ -105,7 +106,7 @@ const EditApp = {
             if (!name) return;
             if (!name.endsWith('：')) name += '：';
             if (State.prices.custom[name]) { 
-                UI.showToast("その項目名は既に存在します。", "warning"); 
+                await UI.showAlert("その項目名は既に存在します。", "エラー"); 
                 return; 
             }
             State.prices.custom[name] = { price: price, suffix: suffix, visible: true };
@@ -113,14 +114,18 @@ const EditApp = {
             this.renderCustomItems();
         });
 
-        $('#custom-prices-area').on('click', '.remove-item-btn', async (e) => {
+        $('#custom-prices-area').off('click', '.remove-item-btn').on('click', '.remove-item-btn', async (e) => {
+            e.preventDefault();
             const name = $(e.currentTarget).data('name');
             const ok = await UI.showConfirm(`「${name}」を削除しますか？`, "項目の削除");
-            if (ok) { delete State.prices.custom[name]; this.renderCustomItems(); }
+            if (ok) { 
+                delete State.prices.custom[name]; 
+                this.renderCustomItems(); 
+            }
         });
     },
 
-    saveData() {
+    async saveData() {
         State.settings.shopName = $('#shopName').val();
         State.settings.chargeTime = Utils.checkZero($('#chargeTime').val());
         State.settings.chargeMoney = Utils.checkZero($('#chargeMoney').val());
@@ -154,8 +159,8 @@ const EditApp = {
             Storage.save(0, !!currentSession["liccounter_enable"], false);
         }
 
-        UI.showToast("設定を保存しました。");
-        setTimeout(() => window.location.href = './', 1500);
+        await UI.showAlert("設定を保存しました。");
+        window.location.href = './';
     }
 };
 
