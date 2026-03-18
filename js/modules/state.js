@@ -23,7 +23,7 @@ export const State = {
     orderHistory: [], 
     lastChargeDate: new Date(),
     
-    // 飲食物の単価設定（プリセット保存用）
+    // 飲食物の単価設定
     prices: {
         my: 0,
         cast: 0,
@@ -35,7 +35,7 @@ export const State = {
 
     // プリセット関連
     presets: {
-        id: 0,
+        editingId: null,
         count: 0,
         data: []
     },
@@ -46,7 +46,10 @@ export const State = {
      * 合計金額を履歴から算出
      */
     get totalMoney() {
-        return this.orderHistory.reduce((sum, item) => sum + Number(item.amount), 0);
+        return this.orderHistory.reduce((sum, item) => {
+            const val = parseFloat(item.amount);
+            return sum + (isNaN(val) ? 0 : val);
+        }, 0);
     },
 
     /**
@@ -64,5 +67,6 @@ export const State = {
         this.orderHistory = [];
         this.startDate = new Date();
         this.lastChargeDate = new Date();
+        this.presets.editingId = null;
     }
 };

@@ -15,6 +15,18 @@ export const UI = {
         this.updateSettingsDisplay();
         this.updateHistoryTable();
         this.updateFutureTable();
+        this.updateSaveButton();
+    },
+
+    /**
+     * 保存ボタンの状態を更新
+     */
+    updateSaveButton() {
+        if (State.presets.editingId !== null) {
+            $('#save-preset').text("お店情報を上書き保存").removeClass('btn-primary').addClass('btn-warning');
+        } else {
+            $('#save-preset').text("お店情報を保存する").removeClass('btn-warning').addClass('btn-primary');
+        }
     },
 
     /**
@@ -30,7 +42,6 @@ export const UI = {
      * 設定値（テキスト表示部分）を更新
      */
     updateSettingsDisplay() {
-        // 入店時刻の入力欄を更新
         const hours = ('0' + State.startDate.getHours()).slice(-2);
         const minutes = ('0' + State.startDate.getMinutes()).slice(-2);
         $('#startTimeEdit').val(`${hours}:${minutes}`);
@@ -59,23 +70,18 @@ export const UI = {
      */
     updateHistoryTable() {
         $("#processesTable").empty();
-        
         const counts = {};
 
-        State.orderHistory.forEach(item => {
+        State.orderHistory.forEach((item, index) => {
             const timeText = Utils.dateToStr(new Date(item.date), "hh:mm");
             let nameText = item.name;
-            
             counts[item.name] = (counts[item.name] || 0) + 1;
 
             if (item.optionText === CONSTANTS.SUFFIX.MINUTES) {
                 const setIndex = counts[item.name];
-                let totalMinutes = 0;
-                if (item.name === CONSTANTS.ITEM_NAMES.FIRST_SET) {
-                    totalMinutes = State.settings.firstChargeTime;
-                } else {
-                    totalMinutes = State.settings.firstChargeTime + (State.settings.chargeTime * setIndex);
-                }
+                let totalMinutes = (item.name === CONSTANTS.ITEM_NAMES.FIRST_SET) 
+                    ? State.settings.firstChargeTime 
+                    : State.settings.firstChargeTime + (State.settings.chargeTime * setIndex);
                 const h = Math.floor(totalMinutes / 60);
                 const m = totalMinutes % 60;
                 nameText += ` 〜${h > 0 ? h + "時間" : ""}${m}分`;
@@ -83,12 +89,17 @@ export const UI = {
                 nameText += ` ${counts[item.name]}${item.optionText}`;
             }
 
-            $("#processesTable").prepend(
-                $("<tr></tr>")
+            // 削除ボタン付きの行を作成
+            const row = $("<tr></tr>")
                 .append($("<td class='vcenter'></td>").html(timeText))
                 .append($("<td class='vcenter'></td>").html(nameText))
                 .append($("<td class='vcenter'></td>").html(Number(item.amount).toLocaleString() + "円"))
-            );
+                .append($("<td class='vcenter text-right'></td>").append(
+                    $('<button type="button" class="btn btn-sm btn-outline-danger p-1" style="line-height:1;"><i class="fas fa-times"></i></button>')
+                        .click(() => window.App.deleteHistoryItem(index))
+                ));
+
+            $("#processesTable").prepend(row);
         });
     },
 
@@ -102,7 +113,6 @@ export const UI = {
         const firstSetCount = State.countItem(CONSTANTS.ITEM_NAMES.FIRST_SET);
         const normalSetCount = State.countItem(CONSTANTS.ITEM_NAMES.NORMAL_SET);
         let totalSetCount = firstSetCount + normalSetCount;
-
         const currentMoneyTotal = State.totalMoney;
 
         for (let i = 0; i < 15; i++) {
