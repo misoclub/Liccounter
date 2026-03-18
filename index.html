@@ -61,7 +61,13 @@
                     <h6 class="text-secondary" id="taxSettingText"> - </h6>
                     <!-- <h6 class="text-secondary">初期費用</h6> -->
                     <h6 class="text-secondary" id="initMoneyText"> - </h6>
-                    <h6 class="text-secondary">入店時刻：<input type="time" id="startTimeEdit" style="border: none; background: transparent; color: inherit; font-size: inherit; font-family: inherit; cursor: pointer; padding: 0; outline: none;"></h6>
+                    <h6 class="text-secondary d-flex align-items-center">
+                        入店時刻：<span id="startTimeDisplay">--:--</span>
+                        <div class="edit-start-time ml-2" style="cursor: pointer;" title="入店時刻を編集">
+                            <i class="fas fa-edit text-info" style="font-size: 0.9rem;"></i>
+                        </div>
+                        <input type="time" id="startTimeEdit" style="position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;">
+                    </h6>
                     <!-- <h6 class="text-secondary">経過時間</h6> -->
                     <h6 class="text-secondary" id="timeText">滞在時間：00:00</h6>                    <!-- <h6 class="text-secondary">セット残り時間</h6> -->
                     <h6 class="text-secondary" id="lastChaegeText">00:00:00</h6>
@@ -144,7 +150,7 @@
                     </div>
                 </div>
                 <div class="col">
-                    <select class="form-control form-control-lg mb-1" id="customItemSelect" style="height: 48px; font-size: 1rem;">
+                    <select class="form-control form-control-lg mb-1 custom-select-blue" id="customItemSelect" style="height: 48px; font-size: 1rem;">
                         <option value="同伴料🤝：">同伴料</option>
                         <option value="チェキ📸：">チェキ</option>
                         <option value="単発場内指名☝️：">場内指名</option>

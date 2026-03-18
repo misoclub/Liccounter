@@ -152,6 +152,16 @@ const App = {
             Storage.save(0, State.isStarted);
         });
 
+        // 入店時刻の編集アイコンをクリックしたときに時刻選択を開く
+        $('.edit-start-time').click(() => {
+            const input = document.getElementById('startTimeEdit');
+            if (input.showPicker) {
+                input.showPicker();
+            } else {
+                input.click();
+            }
+        });
+
         $('#save-preset').click(() => {
             this.syncStateFromForm();
             Storage.save(999, false, true);

@@ -44,7 +44,9 @@ export const UI = {
     updateSettingsDisplay() {
         const hours = ('0' + State.startDate.getHours()).slice(-2);
         const minutes = ('0' + State.startDate.getMinutes()).slice(-2);
-        $('#startTimeEdit').val(`${hours}:${minutes}`);
+        const timeStr = `${hours}:${minutes}`;
+        $('#startTimeEdit').val(timeStr);
+        $('#startTimeDisplay').text(timeStr);
 
         $('#shopNameText').text("店舗名：" + (State.settings.shopName || "名無しのお店"));
         $('#numPeopleText').text("来店人数：" + State.settings.numPeople + "人");

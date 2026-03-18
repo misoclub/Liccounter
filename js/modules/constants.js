@@ -4,7 +4,7 @@
 export const CONSTANTS = {
     // 標準のデフォルト値
     DEFAULTS: {
-        SHOP_NAME: "名無しのお店",
+        SHOP_NAME: "初めてのお店",
         NUM_PEOPLE: 1,
         FIRST_CHARGE_TIME: 0,
         FIRST_CHARGE_MONEY: 0,
@@ -18,18 +18,18 @@ export const CONSTANTS = {
         PRICE_OTHER: 3000,
         // カスタム項目の初期値（価格と単位）
         CUSTOM_PRICES: {
-            "同伴料🤝：": { price: 3000, suffix: "回" },
-            "チェキ📸：": { price: 1000, suffix: "枚" },
+            "同伴料🤝：": { price: 2000, suffix: "回" },
+            "チェキ📸：": { price: 500, suffix: "枚" },
             "単発場内指名☝️：": { price: 2000, suffix: "指名" },
             "キャストショット🥃：": { price: 1500, suffix: "杯" },
-            "シャンパン🍾：": { price: 10000, suffix: "本" },
-            "日本酒🍶：": { price: 2000, suffix: "合" },
+            "シャンパン🍾：": { price: 15000, suffix: "本" },
+            "日本酒🍶：": { price: 9000, suffix: "本" },
             "テキーラ🌵：": { price: 1000, suffix: "杯" },
-            "コカボム💣：": { price: 1000, suffix: "杯" },
-            "クライナー🍾：": { price: 1000, suffix: "本" },
+            "コカボム💣：": { price: 2000, suffix: "杯" },
+            "クライナー🍾：": { price: 2000, suffix: "本" },
             "イエーガー🦌：": { price: 1000, suffix: "杯" },
             "料理🍳：": { price: 1000, suffix: "品" },
-            "その他項目：": { price: 0, suffix: "" }
+            "その他項目：": { price: 1000, suffix: "" }
         },
         PRICE_ENDLESS_SHIMEI: 3000
     },
