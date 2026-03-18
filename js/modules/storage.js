@@ -76,8 +76,8 @@ export const Storage = {
         State.settings.initialCost = Utils.checkZero(saveData["liccounter_otherSetting"]);
         State.settings.numPeople = Utils.checkZero(saveData["liccounter_numSetting"] || saveData["liccounter_numPeople"]);
         State.settings.shopName = saveData["liccounter_shopNameSetting"] || "";
-        State.settings.firstTimeChargeMoney = Utils.checkZero(saveData["liccounter_firstTimeChargeMoneySetting"]);
-        State.settings.firstTimeChargeTime = Utils.checkZero(saveData["liccounter_firstTimeChargeTimeSetting"]);
+        State.settings.firstChargeMoney = Utils.checkZero(saveData["liccounter_firstTimeChargeMoneySetting"]);
+        State.settings.firstChargeTime = Utils.checkZero(saveData["liccounter_firstTimeChargeTimeSetting"]);
 
         // 削除フラグ状態の復元
         if (saveData["liccounter_waiveConfig"]) {

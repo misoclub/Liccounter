@@ -332,12 +332,12 @@ const App = {
             `);
             container.find('.preset-btn').click(() => {
                 Storage.load(preset.presetId);
-                State.presets.currentId = preset.presetId; // 選択したお店のIDを記憶
-                UI.syncFormFromState();
-                this.updateCustomItemSelect();
-                UI.updateAll();
+                State.presets.currentId = preset.presetId;
+                UI.syncFormFromState(); // ここで初回セット料金等も入力欄に入る
+                this.updateCustomItemSelect(); // カスタム項目の選択肢も更新
+                UI.updateAll(); // 全体の表示（テキスト部分）も更新
                 this.updatePresetHighlight();
-                Storage.save(0, State.isStarted); // 現在のセッション(0)を保存して引き継ぐ
+                Storage.save(0, State.isStarted);
                 window.scrollTo(0, 0);
             });
             container.find('.edit-btn').click(() => { window.location.href = `./edit.html?id=${preset.presetId}`; });

@@ -21,6 +21,7 @@ export const CONSTANTS = {
             "同伴料🤝：": { price: 2000, suffix: "回" },
             "チェキ📸：": { price: 500, suffix: "枚" },
             "単発場内指名☝️：": { price: 2000, suffix: "指名" },
+            "ハーフセット：": { price: 1500, suffix: "セット" },
             "シャンパン🍾：": { price: 15000, suffix: "本" },
             "ボトル🍾：": { price: 5000, suffix: "本" },
             "日本酒🍶：": { price: 9000, suffix: "本" },
@@ -28,7 +29,6 @@ export const CONSTANTS = {
             "コカボム💣：": { price: 2000, suffix: "杯" },
             "クライナー🍾：": { price: 2000, suffix: "本" },
             "イエーガー🦌：": { price: 1000, suffix: "杯" },
-            "ハーフセット：": { price: 1500, suffix: "セット" },
             "カラオケ🎤：": { price: 1000, suffix: "曲" },
             "料理🍳：": { price: 1000, suffix: "品" },
             "その他：": { price: 1000, suffix: "" }
