@@ -95,14 +95,23 @@ export const UI = {
             counts[item.name] = (counts[item.name] || 0) + 1;
 
             if (item.optionText === CONSTANTS.SUFFIX.MINUTES) {
-                // セット料金の表示
+                // セット料金の表示：合計時間ではなく「終了時刻」を表示する
                 const setIndex = counts[item.name];
                 let totalMinutes = (item.name === CONSTANTS.ITEM_NAMES.FIRST_SET) 
                     ? State.settings.firstChargeTime 
                     : State.settings.firstChargeTime + (State.settings.chargeTime * setIndex);
-                const h = Math.floor(totalMinutes / 60);
-                const m = totalMinutes % 60;
-                nameText += ` 〜${h > 0 ? h + "時間" : ""}${m}分`;
+                
+                // 開始時刻(item.date)からセット終了時刻を計算
+                const endDate = new Date(item.date);
+                const duration = (item.name === CONSTANTS.ITEM_NAMES.FIRST_SET) ? State.settings.firstChargeTime : State.settings.chargeTime;
+                endDate.setMinutes(endDate.getMinutes() + duration);
+                const endTimeText = Utils.dateToStr(endDate, "hh:mm");
+
+                if (item.name === CONSTANTS.ITEM_NAMES.FIRST_SET) {
+                    nameText = `${item.name} ${endTimeText}まで`;
+                } else {
+                    nameText = `${setIndex}${item.name} ${endTimeText}まで`;
+                }
             } else if (item.optionText === CONSTANTS.SUFFIX.COUNT) {
                 // カスタム項目の表示: アイテムごとの単位を取得
                 const customDef = State.prices.custom[item.name];
@@ -168,15 +177,20 @@ export const UI = {
             const projectedMoney = currentMoneyTotal + (additionalMoneyPerSet * (i + 1));
             const { total } = Calculator.calculateTotalWithTax(projectedMoney, State.settings.taxRate);
 
-            const totalMinutes = (State.settings.firstChargeTime * firstSetCount) + (State.settings.chargeTime * (normalSetCount + i + 1));
-            const h = Math.floor(totalMinutes / 60);
-            const m = totalMinutes % 60;
+            // セット終了時刻を計算
+            const endDate = new Date(futureDate);
+            endDate.setMinutes(endDate.getMinutes() + State.settings.chargeTime);
+            const endTimeText = Utils.dateToStr(endDate, "hh:mm");
+
+            // 行ごとに色を変える（白と薄いグレーの交互に統一）
+            const isGray = (i % 2 !== 0);
+            const rowBgColor = isGray ? '#f2f2f2' : '#ffffff';
 
             $("#futurePprocessesTable").append(
-                $("<tr class='added-row'></tr>")
+                $(`<tr class="added-row" style="background-color: ${rowBgColor};"></tr>`)
                 .append($("<td class='vcenter'></td>").html(timeText))
-                .append($("<td class='vcenter'></td>").html(`${totalSetCount}セット：〜${h > 0 ? h + "h" : ""}${m}m`))
-                .append($("<td class='vcenter'></td>").html(total.toLocaleString() + "円"))
+                .append($("<td class='vcenter'></td>").html(`${totalSetCount}セット：${endTimeText}まで`))
+                .append($("<td class='vcenter text-right'></td>").html(total.toLocaleString() + "円"))
             );
         }
     },
