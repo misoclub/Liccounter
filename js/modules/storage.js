@@ -60,7 +60,14 @@ export const Storage = {
                     visible: true 
                 };
             });
+
+            if (presetId === 0) State.presets.currentId = null;
+
             return null;
+        }
+
+        if (presetId === 0) {
+            State.presets.currentId = saveData["origin_preset_id"] || null;
         }
 
         State.settings.chargeMoney = Utils.checkZero(saveData["liccounter_chageSetting"]);
@@ -80,7 +87,6 @@ export const Storage = {
         const loadedCustom = saveData["price_custom"] || {};
         State.prices.custom = {};
 
-        // デフォルト項目のマッピング
         Object.keys(CONSTANTS.DEFAULTS.CUSTOM_PRICES).forEach(name => {
             const item = loadedCustom[name];
             const defItem = CONSTANTS.DEFAULTS.CUSTOM_PRICES[name];
@@ -97,7 +103,6 @@ export const Storage = {
             }
         });
 
-        // 独自項目のマッピング
         Object.keys(loadedCustom).forEach(name => {
             if (!State.prices.custom[name]) {
                 const item = loadedCustom[name];
@@ -111,6 +116,13 @@ export const Storage = {
     },
 
     save(presetId, isEnable, isNew = false) {
+        if (presetId != 0 && isNew) {
+            const countData = this.get('preset_ser_data_count') || { presetCount: 0 };
+            const newCount = countData.presetCount + 1;
+            this.set('preset_ser_data_count', { presetCount: newCount });
+            presetId = newCount;
+        }
+
         const saveData = {
             liccounter_time: State.startDate.getTime(),
             liccounter_enable: isEnable,
@@ -128,18 +140,13 @@ export const Storage = {
             price_shot: State.prices.shot,
             price_other: State.prices.other,
             price_endless_shimei: State.prices.endlessShimei,
-            price_custom: State.prices.custom
+            price_custom: State.prices.custom,
+            origin_preset_id: State.presets.currentId
         };
 
         this.set('liccounter_user_data' + presetId, saveData);
 
         if (presetId != 0) {
-            if (isNew) {
-                const countData = this.get('preset_ser_data_count') || { presetCount: 0 };
-                const newCount = countData.presetCount + 1;
-                this.set('preset_ser_data_count', { presetCount: newCount });
-                presetId = newCount;
-            }
             this.set('preset_ser_data' + presetId, {
                 presetName: State.settings.shopName,
                 presetId: presetId,

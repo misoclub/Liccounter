@@ -72,10 +72,27 @@ const App = {
             const timeValue = e.target.value;
             if (!timeValue) return;
             const [hours, minutes] = timeValue.split(':');
-            const newDate = new Date(State.startDate);
-            newDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-            if (newDate > new Date()) {
-                if (!confirm("入店時刻が未来になっていますがよろしいですか？")) {
+            
+            const now = new Date();
+            const inputHours = parseInt(hours, 10);
+            const inputMinutes = parseInt(minutes, 10);
+            
+            // 営業日の基準日を計算（朝9時切り替え）
+            const businessDate = new Date(now);
+            if (now.getHours() < 9) {
+                businessDate.setDate(businessDate.getDate() - 1);
+            }
+            
+            const newDate = new Date(businessDate);
+            if (inputHours >= 9) {
+                newDate.setHours(inputHours, inputMinutes, 0, 0);
+            } else {
+                newDate.setDate(newDate.getDate() + 1);
+                newDate.setHours(inputHours, inputMinutes, 0, 0);
+            }
+
+            if (newDate > now) {
+                if (!confirm("入店時刻が現在より未来になっていますがよろしいですか？")) {
                     UI.updateSettingsDisplay(); return;
                 }
             }
@@ -134,10 +151,8 @@ const App = {
             Storage.save(0, State.isStarted);
         });
 
-        // 新規保存ボタン
         $('#save-preset').click(() => {
             this.syncStateFromForm();
-            // IDはStorage.save内で自動採番されるので適当な値で渡す(isNew=true)
             Storage.save(999, false, true);
             alert("お店情報を保存しました。");
             location.reload();
@@ -151,6 +166,41 @@ const App = {
             State.visibleFuture = !State.visibleFuture;
             $('#futureTable').toggle(State.visibleFuture);
             $('#futureButton').text(State.visibleFuture ? "お会計予報を非表示" : "お会計予報を表示");
+        });
+
+        $('#backToTop').click(() => {
+            State.reset();
+            Storage.save(0, false);
+            location.reload();
+        });
+
+        $('#resultDownload').click(() => {
+            let resultText = `${State.settings.shopName}\n`;
+            resultText += `入店時刻: ${Utils.dateToStr(State.startDate, 'YYYY/MM/DD(WW) hh:mm')}\n`;
+            resultText += `--------------------\n`;
+            
+            State.orderHistory.forEach(item => {
+                const timeStr = Utils.dateToStr(new Date(item.date), "hh:mm");
+                let nameStr = item.name.replace('：', '');
+                if (item.optionText && item.optionText !== CONSTANTS.SUFFIX.MINUTES) {
+                    nameStr += ` (${item.optionText})`;
+                }
+                resultText += `${timeStr} - ${nameStr}: ${item.amount}円\n`;
+            });
+            
+            resultText += `--------------------\n`;
+            const { total, tax } = Calculator.calculateTotalWithTax(State.totalMoney, State.settings.taxRate);
+            resultText += `小計: ${State.totalMoney}円\n`;
+            resultText += `TAX(${State.settings.taxRate}%): ${tax}円\n`;
+            resultText += `合計: ${total}円\n`;
+
+            const blob = new Blob([resultText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${Utils.dateToStr(State.startDate, 'YYYYMMDD_hhmm')}_お会計記録.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
         });
 
         $('input').focus(function() { $(this).select(); });
@@ -185,7 +235,7 @@ const App = {
             const container = $(`
                 <div class="row mb-2 align-items-center no-gutters">
                     <div class="col-10">
-                        <button type="button" class="btn btn-secondary btn-lg btn-block text-truncate py-3">${preset.presetName}</button>
+                        <button type="button" class="btn btn-secondary btn-lg btn-block text-truncate py-3 preset-btn" data-preset-id="${preset.presetId}">${preset.presetName}</button>
                     </div>
                     <div class="col-2 pl-1">
                         <button type="button" class="btn btn-outline-info btn-block py-3 edit-btn" title="編集">
@@ -194,15 +244,35 @@ const App = {
                     </div>
                 </div>
             `);
-            container.find('.btn-secondary').click(() => {
+            container.find('.preset-btn').click(() => {
                 Storage.load(preset.presetId);
+                State.presets.currentId = preset.presetId; // 選択したお店のIDを記憶
                 UI.syncFormFromState();
                 this.updateCustomItemSelect();
                 UI.updateAll();
+                this.updatePresetHighlight();
+                Storage.save(0, State.isStarted); // 現在のセッション(0)を保存して引き継ぐ
                 window.scrollTo(0, 0);
             });
             container.find('.edit-btn').click(() => { window.location.href = `./edit.html?id=${preset.presetId}`; });
             target.append(container);
+        });
+
+        // 初回ロード時のハイライト状態を反映
+        this.updatePresetHighlight();
+    },
+
+    /**
+     * 選択中のお店のボタンの色を変更する
+     */
+    updatePresetHighlight() {
+        $('.preset-btn').each(function() {
+            const id = $(this).data('preset-id');
+            if (id === State.presets.currentId) {
+                $(this).removeClass('btn-secondary').addClass('preset-active');
+            } else {
+                $(this).removeClass('preset-active').addClass('btn-secondary');
+            }
         });
     },
 
@@ -236,7 +306,64 @@ const App = {
         clearInterval(State.timerId); UI.updateAll(); 
         const { total } = Calculator.calculateTotalWithTax(State.totalMoney, State.settings.taxRate);
         alert(`お会計は ${total.toLocaleString()} 円でした。\n今日も楽しめましたか？`);
-        State.reset(); Storage.save(0, false); location.reload();
+
+        // 値が変更されているかチェックし、上書き保存を提案
+        if (State.presets.currentId && this.hasSettingsChanged(State.presets.currentId)) {
+            const presetName = State.presets.data.find(p => p.presetId === State.presets.currentId)?.presetName || "このお店";
+            if (confirm(`ドリンクの値段等の設定が「${presetName}」の保存内容から変更されています。\n変更した内容を上書き保存しますか？`)) {
+                Storage.save(State.presets.currentId, false, false);
+                alert("上書き保存しました。");
+            }
+        }
+
+        State.isStarted = false; 
+        Storage.save(0, false); 
+        
+        // お会計後は画面をリロードせず、結果保存・トップへ戻るボタンを表示する
+        $('#stop').hide();
+        $('#resultDownload').show();
+        $('#backToTop').show();
+    },
+
+    /**
+     * 現在のフォーム入力値が、保存されているお店データから変更されているかチェックする
+     */
+    hasSettingsChanged(presetId) {
+        const savedData = Storage.get('liccounter_user_data' + presetId);
+        if (!savedData) return true; // 保存データがなければ変更ありとみなす
+
+        const s = State.settings;
+        const p = State.prices;
+
+        // 基本設定の比較
+        if (Utils.checkZero(savedData["liccounter_chageSetting"]) !== s.chargeMoney) return true;
+        if (Utils.checkZero(savedData["liccounter_taxSetting"]) !== s.taxRate) return true;
+        if (Utils.checkZero(savedData["liccounter_chargeTimeSetting"]) !== s.chargeTime) return true;
+        if (Utils.checkZero(savedData["liccounter_otherSetting"]) !== s.initialCost) return true;
+        if (Utils.checkZero(savedData["liccounter_firstTimeChargeMoneySetting"]) !== s.firstChargeMoney) return true;
+        if (Utils.checkZero(savedData["liccounter_firstTimeChargeTimeSetting"]) !== s.firstChargeTime) return true;
+        
+        // 基本ドリンクの比較
+        if (Utils.checkZero(savedData["price_my"]) !== p.my) return true;
+        if (Utils.checkZero(savedData["price_cast"]) !== p.cast) return true;
+        if (Utils.checkZero(savedData["price_shot"]) !== p.shot) return true;
+        if (Utils.checkZero(savedData["price_other"]) !== p.other) return true;
+        if (Utils.checkZero(savedData["price_endless_shimei"]) !== p.endlessShimei) return true;
+
+        // カスタム項目の価格比較
+        const loadedCustom = savedData["price_custom"] || {};
+        const currentCustomKeys = Object.keys(p.custom);
+        
+        for (const key of currentCustomKeys) {
+            const currentItem = p.custom[key];
+            const loadedItem = loadedCustom[key];
+            if (!loadedItem) return true; // 新しく追加された項目がある場合
+            
+            const loadedPrice = typeof loadedItem === 'object' ? Utils.checkZero(loadedItem.price) : Utils.checkZero(loadedItem);
+            if (loadedPrice !== currentItem.price) return true;
+        }
+
+        return false;
     },
 
     updateLastChargeDate() {

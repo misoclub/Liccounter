@@ -26,7 +26,6 @@ export const State = {
         cast: 0,
         shot: 0,
         other: 0,
-        // custom: {"項目名": {price: 1000, visible: true}, ...}
         custom: {}, 
         endlessShimei: 0
     },
@@ -34,7 +33,8 @@ export const State = {
     presets: {
         editingId: null,
         count: 0,
-        data: []
+        data: [],
+        currentId: null // 現在選択中のお店ID
     },
 
     visibleFuture: false,
@@ -61,6 +61,7 @@ export const State = {
         this.startDate = new Date();
         this.lastChargeDate = new Date();
         this.presets.editingId = null;
+        this.presets.currentId = null; // リセット時に選択状態も解除
         this.waiveConfig.lastRequiredCount = 0;
         this.waiveConfig.isLatestSetWaived = false;
     }
