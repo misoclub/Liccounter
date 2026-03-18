@@ -17,6 +17,7 @@ const App = {
     },
 
     loadInitialData() {
+        // 現在のセッション読み込み
         const saveData = Storage.load(0);
         if (saveData) {
             State.isStarted = !!saveData["liccounter_enable"];
@@ -26,18 +27,41 @@ const App = {
                 State.orderHistory = history.map(item => ({...item, date: new Date(item.date)}));
             }
         }
-        const presetCountData = Storage.store.get(CONSTANTS.STORAGE_KEYS.PRESET_COUNT);
-        if (presetCountData) {
+
+        // 保存済みのお店リストの収集
+        const presetCountData = Storage.get(CONSTANTS.STORAGE_KEYS.PRESET_COUNT);
+        State.presets.data = [];
+        if (presetCountData && presetCountData.presetCount) {
             State.presets.count = presetCountData.presetCount;
-            State.presets.data = [];
             for (let i = 1; i <= State.presets.count; i++) {
-                const data = Storage.store.get(CONSTANTS.STORAGE_KEYS.PRESET_DATA_PREFIX + i);
-                if (data) State.presets.data.push(data);
+                const data = Storage.get(CONSTANTS.STORAGE_KEYS.PRESET_DATA_PREFIX + i);
+                if (data) {
+                    State.presets.data.push(data);
+                }
             }
         }
+
         this.updateLastChargeDate();
         UI.syncFormFromState();
+        this.updateCustomItemSelect();
         UI.updateAll();
+    },
+
+    updateCustomItemSelect() {
+        const select = $('#customItemSelect');
+        const currentVal = select.val();
+        select.empty();
+        Object.keys(State.prices.custom).forEach(name => {
+            const item = State.prices.custom[name];
+            if (item && item.visible !== false) {
+                select.append($('<option></option>').val(name).text(name.replace('：', '')));
+            }
+        });
+        if (currentVal && select.find(`option[value="${currentVal}"]`).length > 0) {
+            select.val(currentVal);
+        } else {
+            select.trigger('change');
+        }
     },
 
     setupEventListeners() {
@@ -52,8 +76,7 @@ const App = {
             newDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
             if (newDate > new Date()) {
                 if (!confirm("入店時刻が未来になっていますがよろしいですか？")) {
-                    UI.updateSettingsDisplay();
-                    return;
+                    UI.updateSettingsDisplay(); return;
                 }
             }
             State.startDate = newDate;
@@ -75,27 +98,26 @@ const App = {
         $('#sp-drink').click(() => this.addDrinkFromInput('shot', CONSTANTS.ITEM_NAMES.SHOT, CONSTANTS.SUFFIX.CUP));
         $('#other-drink').click(() => this.addDrinkFromInput('other', CONSTANTS.ITEM_NAMES.OTHER_DRINK, CONSTANTS.SUFFIX.CUP));
         
-        // --- その他項目の追加 ---
         $('#addCustomItem').click(() => {
             const itemName = $('#customItemSelect').val();
+            if (!itemName) return;
             const amount = Utils.checkZero($('#customItemAmount').val());
-            // 価格を記憶
-            State.prices.custom[itemName] = amount;
+            if (State.prices.custom[itemName]) State.prices.custom[itemName].price = amount;
             this.addDrink(itemName, amount, new Date(), CONSTANTS.SUFFIX.COUNT);
         });
 
-        // セレクトボックス切り替え時に価格を表示
         $('#customItemSelect').change((e) => {
             const itemName = e.target.value;
-            const price = State.prices.custom[itemName] || 0;
-            $('#customItemAmount').val(price);
+            const item = State.prices.custom[itemName];
+            $('#customItemAmount').val(item ? item.price : 0);
         });
 
-        // 価格入力変更時に記憶
         $('#customItemAmount').change((e) => {
             const itemName = $('#customItemSelect').val();
-            State.prices.custom[itemName] = Utils.checkZero(e.target.value);
-            Storage.save(0, State.isStarted);
+            if (itemName && State.prices.custom[itemName]) {
+                State.prices.custom[itemName].price = Utils.checkZero(e.target.value);
+                Storage.save(0, State.isStarted);
+            }
         });
 
         $('#endless-jyonai-shimei').click(() => {
@@ -112,17 +134,17 @@ const App = {
             Storage.save(0, State.isStarted);
         });
 
+        // 新規保存ボタン
         $('#save-preset').click(() => {
             this.syncStateFromForm();
-            let targetId = State.presets.editingId;
-            if (targetId === null) { State.presets.count++; targetId = State.presets.count; }
-            Storage.save(targetId, false);
+            // IDはStorage.save内で自動採番されるので適当な値で渡す(isNew=true)
+            Storage.save(999, false, true);
             alert("お店情報を保存しました。");
             location.reload();
         });
 
         $('#cacheclear').click(() => {
-            if (confirm("保存してあるデータをすべて削除しますか？")) { Storage.store.clearAll(); location.reload(); }
+            if (confirm("保存してあるデータをすべて削除しますか？")) { Storage.clearAll(); location.reload(); }
         });
 
         $('#futureButton').click(() => {
@@ -148,40 +170,39 @@ const App = {
         State.prices.shot = Utils.checkZero($('#sp-amount').val());
         State.prices.other = Utils.checkZero($('#other-amount').val());
         State.prices.endlessShimei = Utils.checkZero($('#endless-jyonai-shimei-amount').val());
-        
-        // カスタム価格も同期
         const currentItem = $('#customItemSelect').val();
-        State.prices.custom[currentItem] = Utils.checkZero($('#customItemAmount').val());
+        if (currentItem && State.prices.custom[currentItem]) {
+            State.prices.custom[currentItem].price = Utils.checkZero($('#customItemAmount').val());
+        }
     },
 
     renderPresets() {
+        const target = $('#presetButtonTarget');
+        target.empty();
+        
         State.presets.data.forEach(preset => {
             if (!preset.enable) return;
-            const button = $(`<div class="col"><button type="button" class="btn btn-secondary btn-lg btn-block">${preset.presetName}</button></div><div class="my-box mt-1"></div>`);
-            button.find('button').click(() => {
-                if ($('#myCheckbox').is(':checked')) {
-                    const result = confirm(`${preset.presetName}を編集、または削除しますか？\n[OK]: 編集(読み込み) / [キャンセル]: 削除`);
-                    if (result) {
-                        Storage.load(preset.presetId);
-                        State.presets.editingId = preset.presetId;
-                        UI.syncFormFromState();
-                        UI.updateSaveButton();
-                        alert(`${preset.presetName}の設定を読み込みました。修正して保存すると上書きされます。`);
-                    } else {
-                        if (confirm("本当に削除しますか？")) {
-                            const pData = { ...preset, enable: false };
-                            Storage.store.set(CONSTANTS.STORAGE_KEYS.PRESET_DATA_PREFIX + preset.presetId, pData);
-                            location.reload();
-                        }
-                    }
-                } else {
-                    Storage.load(preset.presetId);
-                    State.presets.editingId = null; 
-                    UI.syncFormFromState();
-                    UI.updateAll();
-                }
+            const container = $(`
+                <div class="row mb-2 align-items-center no-gutters">
+                    <div class="col-10">
+                        <button type="button" class="btn btn-secondary btn-lg btn-block text-truncate py-3">${preset.presetName}</button>
+                    </div>
+                    <div class="col-2 pl-1">
+                        <button type="button" class="btn btn-outline-info btn-block py-3 edit-btn" title="編集">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                </div>
+            `);
+            container.find('.btn-secondary').click(() => {
+                Storage.load(preset.presetId);
+                UI.syncFormFromState();
+                this.updateCustomItemSelect();
+                UI.updateAll();
+                window.scrollTo(0, 0);
             });
-            $('#presetButtonTarget').after(button);
+            container.find('.edit-btn').click(() => { window.location.href = `./edit.html?id=${preset.presetId}`; });
+            target.append(container);
         });
     },
 
@@ -189,10 +210,8 @@ const App = {
         if (State.isStarted) return;
         this.syncStateFromForm();
         if (State.settings.chargeTime <= 0) { alert("セット時間は0にできません"); return; }
-        State.reset(); 
-        this.syncStateFromForm();
-        State.isStarted = true;
-        State.startDate = new Date();
+        State.reset(); this.syncStateFromForm();
+        State.isStarted = true; State.startDate = new Date();
         if (State.settings.initialCost > 0) { this.addDrink(CONSTANTS.ITEM_NAMES.INITIAL_COST, State.settings.initialCost, State.startDate, "", false); }
         this.resumeWork();
         $('#start').hide(); $('#stop').show(); $('.ui_setting').hide(); $('.ui_runtime').show();
@@ -214,13 +233,10 @@ const App = {
 
     stopWork() {
         if (!confirm("お会計しますか？")) return;
-        clearInterval(State.timerId);
-        UI.updateAll(); 
+        clearInterval(State.timerId); UI.updateAll(); 
         const { total } = Calculator.calculateTotalWithTax(State.totalMoney, State.settings.taxRate);
         alert(`お会計は ${total.toLocaleString()} 円でした。\n今日も楽しめましたか？`);
-        State.reset(); 
-        Storage.save(0, false);
-        location.reload();
+        State.reset(); Storage.save(0, false); location.reload();
     },
 
     updateLastChargeDate() {

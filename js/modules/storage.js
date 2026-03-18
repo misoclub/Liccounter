@@ -6,13 +6,34 @@ import { Utils } from './utils.js';
 import { CONSTANTS } from './constants.js';
 
 export const Storage = {
-    store: window.store,
+    get(key) {
+        if (window.store && typeof window.store.get === 'function') {
+            return window.store.get(key);
+        }
+        const val = localStorage.getItem(key);
+        if (!val) return null;
+        try { return JSON.parse(val); } catch (e) { return val; }
+    },
 
-    /**
-     * 指定したプリセットIDのデータを読み込んで State を更新
-     */
+    set(key, value) {
+        if (window.store && typeof window.store.set === 'function') {
+            window.store.set(key, value);
+            return;
+        }
+        const val = (typeof value === 'object') ? JSON.stringify(value) : value;
+        localStorage.setItem(key, val);
+    },
+
+    clearAll() {
+        if (window.store && typeof window.store.clearAll === 'function') {
+            window.store.clearAll();
+        } else {
+            localStorage.clear();
+        }
+    },
+
     load(presetId) {
-        const saveData = this.store.get('liccounter_user_data' + presetId);
+        const saveData = this.get('liccounter_user_data' + presetId);
         
         if (!saveData) {
             const def = CONSTANTS.DEFAULTS;
@@ -24,15 +45,21 @@ export const Storage = {
             State.settings.shopName = def.SHOP_NAME;
             State.settings.firstChargeMoney = def.FIRST_CHARGE_MONEY;
             State.settings.firstChargeTime = def.FIRST_CHARGE_TIME;
-
             State.prices.my = def.PRICE_MY;
             State.prices.cast = def.PRICE_CAST;
             State.prices.shot = def.PRICE_SHOT;
             State.prices.other = def.PRICE_OTHER;
             State.prices.endlessShimei = def.PRICE_ENDLESS_SHIMEI;
             
-            // カスタム価格の初期化
-            State.prices.custom = { ...def.CUSTOM_PRICES };
+            State.prices.custom = {};
+            Object.keys(def.CUSTOM_PRICES).forEach(name => {
+                const itemDef = def.CUSTOM_PRICES[name];
+                State.prices.custom[name] = { 
+                    price: itemDef.price, 
+                    suffix: itemDef.suffix,
+                    visible: true 
+                };
+            });
             return null;
         }
 
@@ -44,23 +71,46 @@ export const Storage = {
         State.settings.shopName = saveData["liccounter_shopNameSetting"] || "";
         State.settings.firstChargeMoney = Utils.checkZero(saveData["liccounter_firstTimeChargeMoneySetting"]);
         State.settings.firstChargeTime = Utils.checkZero(saveData["liccounter_firstTimeChargeTimeSetting"]);
-
         State.prices.my = Utils.checkZero(saveData["price_my"]);
         State.prices.cast = Utils.checkZero(saveData["price_cast"]);
         State.prices.shot = Utils.checkZero(saveData["price_shot"]);
         State.prices.other = Utils.checkZero(saveData["price_other"]);
         State.prices.endlessShimei = Utils.checkZero(saveData["price_endless_shimei"]);
         
-        // カスタム価格の読み込み（なければデフォルトから補完）
-        State.prices.custom = saveData["price_custom"] || { ...CONSTANTS.DEFAULTS.CUSTOM_PRICES };
+        const loadedCustom = saveData["price_custom"] || {};
+        State.prices.custom = {};
+
+        // デフォルト項目のマッピング
+        Object.keys(CONSTANTS.DEFAULTS.CUSTOM_PRICES).forEach(name => {
+            const item = loadedCustom[name];
+            const defItem = CONSTANTS.DEFAULTS.CUSTOM_PRICES[name];
+            if (item && typeof item === 'object') {
+                State.prices.custom[name] = {
+                    price: Utils.checkZero(item.price),
+                    suffix: item.suffix !== undefined ? item.suffix : defItem.suffix,
+                    visible: item.visible !== undefined ? item.visible : true
+                };
+            } else if (typeof item === 'number') {
+                State.prices.custom[name] = { price: item, suffix: defItem.suffix, visible: true };
+            } else {
+                State.prices.custom[name] = { price: defItem.price, suffix: defItem.suffix, visible: true };
+            }
+        });
+
+        // 独自項目のマッピング
+        Object.keys(loadedCustom).forEach(name => {
+            if (!State.prices.custom[name]) {
+                const item = loadedCustom[name];
+                State.prices.custom[name] = typeof item === 'object' 
+                    ? { price: Utils.checkZero(item.price), suffix: item.suffix || "", visible: item.visible }
+                    : { price: Utils.checkZero(item), suffix: "", visible: true };
+            }
+        });
 
         return saveData;
     },
 
-    /**
-     * 現在の State を保存
-     */
-    save(presetId, isEnable) {
+    save(presetId, isEnable, isNew = false) {
         const saveData = {
             liccounter_time: State.startDate.getTime(),
             liccounter_enable: isEnable,
@@ -78,21 +128,23 @@ export const Storage = {
             price_shot: State.prices.shot,
             price_other: State.prices.other,
             price_endless_shimei: State.prices.endlessShimei,
-            price_custom: State.prices.custom // 追加
+            price_custom: State.prices.custom
         };
 
-        this.store.set('liccounter_user_data' + presetId, saveData);
+        this.set('liccounter_user_data' + presetId, saveData);
 
-        if (presetId !== 0) {
-            const presetCountData = { presetCount: State.presets.count };
-            this.store.set('preset_ser_data_count', presetCountData);
-
-            const presetData = {
+        if (presetId != 0) {
+            if (isNew) {
+                const countData = this.get('preset_ser_data_count') || { presetCount: 0 };
+                const newCount = countData.presetCount + 1;
+                this.set('preset_ser_data_count', { presetCount: newCount });
+                presetId = newCount;
+            }
+            this.set('preset_ser_data' + presetId, {
                 presetName: State.settings.shopName,
                 presetId: presetId,
                 enable: true
-            };
-            this.store.set('preset_ser_data' + presetId, presetData);
+            });
         }
     }
 };

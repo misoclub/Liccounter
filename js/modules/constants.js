@@ -16,16 +16,20 @@ export const CONSTANTS = {
         PRICE_CAST: 1000,
         PRICE_SHOT: 1500,
         PRICE_OTHER: 3000,
-        // カスタム項目の初期値
+        // カスタム項目の初期値（価格と単位）
         CUSTOM_PRICES: {
-            "単発場内指名☝️：": 2000,
-            "チェキ📸：": 1000,
-            "同伴料🤝：": 3000,
-            "シャンパン🍾：": 10000,
-            "キャストショット🥃：": 1500,
-            "日本酒🍶：": 2000,
-            "料理🍳：": 1000,
-            "その他項目：": 0
+            "同伴料🤝：": { price: 3000, suffix: "回" },
+            "チェキ📸：": { price: 1000, suffix: "枚" },
+            "単発場内指名☝️：": { price: 2000, suffix: "指名" },
+            "キャストショット🥃：": { price: 1500, suffix: "杯" },
+            "シャンパン🍾：": { price: 10000, suffix: "本" },
+            "日本酒🍶：": { price: 2000, suffix: "合" },
+            "テキーラ🌵：": { price: 1000, suffix: "杯" },
+            "コカボム💣：": { price: 1000, suffix: "杯" },
+            "クライナー🍾：": { price: 1000, suffix: "本" },
+            "イエーガー🦌：": { price: 1000, suffix: "杯" },
+            "料理🍳：": { price: 1000, suffix: "品" },
+            "その他項目：": { price: 0, suffix: "" }
         },
         PRICE_ENDLESS_SHIMEI: 3000
     },
@@ -43,7 +47,7 @@ export const CONSTANTS = {
         MINUTES: "分",
         NOMINATION: "指名",
         CUP: "杯目",
-        COUNT: "個"
+        COUNT: "個" // デフォルト用
     },
     STORAGE_KEYS: {
         USER_DATA_PREFIX: "liccounter_user_data",

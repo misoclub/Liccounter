@@ -26,8 +26,8 @@ export const State = {
         cast: 0,
         shot: 0,
         other: 0,
-        // shimei は custom に統合
-        custom: {}, // {"項目名": 価格, ...}
+        // custom: {"項目名": {price: 1000, visible: true}, ...}
+        custom: {}, 
         endlessShimei: 0
     },
 

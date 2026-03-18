@@ -72,6 +72,7 @@ export const UI = {
         $("#processesTable").empty();
         const counts = {};
 
+        // 最後の通常セット料金のインデックスを探す
         let lastNormalSetIndex = -1;
         for (let i = State.orderHistory.length - 1; i >= 0; i--) {
             if (State.orderHistory[i].name === CONSTANTS.ITEM_NAMES.NORMAL_SET) {
@@ -86,6 +87,7 @@ export const UI = {
             counts[item.name] = (counts[item.name] || 0) + 1;
 
             if (item.optionText === CONSTANTS.SUFFIX.MINUTES) {
+                // セット料金の表示
                 const setIndex = counts[item.name];
                 let totalMinutes = (item.name === CONSTANTS.ITEM_NAMES.FIRST_SET) 
                     ? State.settings.firstChargeTime 
@@ -93,7 +95,13 @@ export const UI = {
                 const h = Math.floor(totalMinutes / 60);
                 const m = totalMinutes % 60;
                 nameText += ` 〜${h > 0 ? h + "時間" : ""}${m}分`;
+            } else if (item.optionText === CONSTANTS.SUFFIX.COUNT) {
+                // カスタム項目の表示: アイテムごとの単位を取得
+                const customDef = State.prices.custom[item.name];
+                const unit = (customDef && customDef.suffix) ? customDef.suffix : "";
+                nameText += ` ${counts[item.name]}${unit}`;
             } else if (item.optionText) {
+                // その他（杯目など）
                 nameText += ` ${counts[item.name]}${item.optionText}`;
             }
 
@@ -173,8 +181,10 @@ export const UI = {
         $('#other-amount').val(State.prices.other);
         $('#endless-jyonai-shimei-amount').val(State.prices.endlessShimei);
         
-        // カスタム項目の初期表示を反映
-        const currentItem = $('#customItemSelect').val();
-        $('#customItemAmount').val(State.prices.custom[currentItem] || 0);
+        const currentItemName = $('#customItemSelect').val();
+        const customItem = State.prices.custom[currentItemName];
+        if (customItem) {
+            $('#customItemAmount').val(customItem.price);
+        }
     }
 };
