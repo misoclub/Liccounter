@@ -42,6 +42,11 @@ export const UI = {
      * 設定値（テキスト表示部分）を更新
      */
     updateSettingsDisplay() {
+        // State.startDateが無効な場合は現在時刻をセット（表示崩れ防止）
+        if (!State.startDate || isNaN(State.startDate.getTime())) {
+            State.startDate = new Date();
+        }
+
         const hours = ('0' + State.startDate.getHours()).slice(-2);
         const minutes = ('0' + State.startDate.getMinutes()).slice(-2);
         const timeStr = `${hours}:${minutes}`;

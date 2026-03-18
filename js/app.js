@@ -21,11 +21,24 @@ const App = {
         const saveData = Storage.load(0);
         if (saveData) {
             State.isStarted = !!saveData["liccounter_enable"];
-            State.startDate = new Date(saveData["liccounter_time"]);
+            // 保存された時間が有効な数字かチェック
+            const loadedTime = saveData["liccounter_time"];
+            const loadedDate = new Date(loadedTime);
+            State.startDate = (loadedTime && !isNaN(loadedDate.getTime())) ? loadedDate : new Date();
+
             if (saveData["liccounter_jsonText"]) {
                 const history = JSON.parse(saveData["liccounter_jsonText"]);
                 State.orderHistory = history.map(item => ({...item, date: new Date(item.date)}));
             }
+        } else {
+            State.startDate = new Date();
+        }
+
+        // 入店中（Started）でない場合は、前回のセッション内容をフォームに引き継がず、
+        // デフォルトの状態（新規のお店）として表示する
+        if (!State.isStarted) {
+            Storage.load(null); // デフォルト値をStateにセット
+            State.presets.currentId = null;
         }
 
         // 保存済みのお店リストの収集
