@@ -48,7 +48,7 @@ export const CONSTANTS = {
     SUFFIX: {
         MINUTES: "分",
         NOMINATION: "指名",
-        CUP: "杯目",
+        CUP: "杯",
         COUNT: "個" // デフォルト用
     },
     STORAGE_KEYS: {
