@@ -59,6 +59,10 @@ const App = {
         UI.syncFormFromState();
         this.updateCustomItemSelect();
         UI.updateAll();
+
+        // 予報テーブルの表示状態を復元
+        $('#futureTable').toggle(State.visibleFuture);
+        $('#futureButton').text(State.visibleFuture ? "お会計予報を非表示" : "お会計予報を表示");
     },
 
     updateCustomItemSelect() {
@@ -237,6 +241,7 @@ const App = {
             State.visibleFuture = !State.visibleFuture;
             $('#futureTable').toggle(State.visibleFuture);
             $('#futureButton').text(State.visibleFuture ? "お会計予報を非表示" : "お会計予報を表示");
+            Storage.save(0, State.isStarted);
         });
 
         $('#backToTop').click(() => {
@@ -540,6 +545,7 @@ const App = {
                     this.addDrink(CONSTANTS.ITEM_NAMES.ENDLESS_SHIMEI, State.settings.endlessJyonaiShimei, chargeDate, CONSTANTS.SUFFIX.NOMINATION);
                 }
             }
+            Storage.save(0, State.isStarted);
         }
         this.updateLastChargeDate();
         UI.updateFutureTable();

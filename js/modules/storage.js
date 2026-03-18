@@ -79,6 +79,7 @@ export const Storage = {
         State.settings.firstChargeMoney = Utils.checkZero(saveData["liccounter_firstTimeChargeMoneySetting"]);
         State.settings.firstChargeTime = Utils.checkZero(saveData["liccounter_firstTimeChargeTimeSetting"]);
         State.settings.endlessJyonaiShimei = Utils.checkZero(saveData["liccounter_endlessJyonaiShimei"]);
+        State.visibleFuture = !!saveData["liccounter_visibleFuture"];
 
         // 削除フラグ状態の復元
         if (saveData["liccounter_waiveConfig"]) {
@@ -148,6 +149,7 @@ export const Storage = {
             liccounter_jsonText: JSON.stringify(State.orderHistory),
             // 削除フラグ状態も保存（リロード対策）
             liccounter_waiveConfig: JSON.stringify(State.waiveConfig),
+            liccounter_visibleFuture: State.visibleFuture,
             price_my: State.prices.my,
             price_cast: State.prices.cast,
             price_shot: State.prices.shot,
