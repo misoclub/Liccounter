@@ -289,7 +289,7 @@ const App = {
                 URL.revokeObjectURL(url);
             }, 500);
         });
-        $('input').focus(function() { $(this).select(); });
+        $('input').on('focus', function() { $(this).select(); });
     },
 
     syncStateFromForm() {

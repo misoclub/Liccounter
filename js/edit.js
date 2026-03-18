@@ -123,6 +123,9 @@ const EditApp = {
                 this.renderCustomItems(); 
             }
         });
+
+        // すべての入力欄でフォーカス時に全選択する
+        $(document).on('focus', 'input', function() { $(this).select(); });
     },
 
     async saveData() {
