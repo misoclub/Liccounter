@@ -241,6 +241,7 @@ const App = {
 
         $('#backToTop').click(() => {
             window.scrollTo(0, 0);
+            State.presets.currentId = null; // お会計後のトップ戻り時は選択状態を完全にクリア
             State.reset();
             Storage.save(0, false);
             location.reload();
