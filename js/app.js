@@ -392,6 +392,13 @@ const App = {
             this.checkAutoCharge();
             $('#lastChaegeText').text("残り時間：" + Calculator.getLastTimeText(State.lastChargeDate));
             UI.updateMoneyDisplay();
+            
+            // 永続場内指名ボタンの状態を同期
+            if (State.settings.endlessJyonaiShimei > 0) {
+                $('#endless-jyonai-shimei').prop('disabled', true);
+            } else {
+                $('#endless-jyonai-shimei').prop('disabled', false);
+            }
         };
         updateTick();
         State.timerId = setInterval(updateTick, 1000);
@@ -569,6 +576,12 @@ const App = {
                 if (State.settings.firstChargeTime > 0) seconds -= State.settings.firstChargeTime * 60;
                 State.waiveConfig.lastRequiredCount = Math.max(0, Math.ceil(seconds / (60 * State.settings.chargeTime)));
             }
+            
+            // 永続場内指名を削除した場合は設定も戻す
+            if (item.name === CONSTANTS.ITEM_NAMES.ENDLESS_SHIMEI) {
+                State.settings.endlessJyonaiShimei = 0;
+            }
+
             State.orderHistory.splice(index, 1);
             this.updateLastChargeDate();
             UI.updateAll();
