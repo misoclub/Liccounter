@@ -15,13 +15,12 @@ export const CONSTANTS = {
         PRICE_MY: 1000,
         PRICE_CAST: 1000,
         PRICE_SHOT: 1500,
-        PRICE_OTHER: 3000,
+        PRICE_OTHER: 1500,
         // カスタム項目の初期値（価格と単位）
         CUSTOM_PRICES: {
             "同伴料🤝：": { price: 2000, suffix: "回" },
             "チェキ📸：": { price: 500, suffix: "枚" },
             "単発場内指名☝️：": { price: 2000, suffix: "指名" },
-            "キャストショット🥃：": { price: 1500, suffix: "杯" },
             "シャンパン🍾：": { price: 15000, suffix: "本" },
             "日本酒🍶：": { price: 9000, suffix: "本" },
             "テキーラ🌵：": { price: 1000, suffix: "杯" },
@@ -41,7 +40,7 @@ export const CONSTANTS = {
         GUEST_DRINK: "ゲスドリ🍺：",
         CAST_DRINK: "キャスドリ🍹：",
         SHOT: "ショット🥃：",
-        OTHER_DRINK: "他ドリンク🥂："
+        OTHER_DRINK: "キャストショット🥃："
     },
     SUFFIX: {
         MINUTES: "分",
