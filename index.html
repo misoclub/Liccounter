@@ -140,15 +140,27 @@
                     </div>
                 </div>
                 <div class="col">
-                    <button type="button" class="btn btn-outline-danger btn-lg btn-block" id="jyonai-shimei">単発場内指名</button>
-                    <div class="input-group input-group-sm mb-3">
-                        <input type="text" class="form-control" id="jyonai-shimei-amount" aria-label="Sizing example input" value="2000" placeholder="2000" inputmode="numeric" aria-describedby="inputGroup-sizing-sm">
-                    </div>
-                </div>
-                <div class="col">
                     <button type="button" class="btn btn-outline-danger btn-lg btn-block" id="endless-jyonai-shimei">永続場内指名</button>
                     <div class="input-group input-group-sm mb-3">
                         <input type="text" class="form-control" id="endless-jyonai-shimei-amount" aria-label="Sizing example input" value="2000" placeholder="2000" inputmode="numeric" aria-describedby="inputGroup-sizing-sm">
+                    </div>
+                </div>
+                <div class="col">
+                    <select class="form-control form-control-lg mb-1" id="customItemSelect" style="height: 48px; font-size: 1rem;">
+                        <option value="単発場内指名☝️：">場内指名</option>
+                        <option value="チェキ📸：">チェキ</option>
+                        <option value="同伴料🤝：">同伴料</option>
+                        <option value="シャンパン🍾：">シャンパン</option>
+                        <option value="キャストショット🥃：">キャストショット</option>
+                        <option value="日本酒🍶：">日本酒</option>
+                        <option value="料理🍳：">料理</option>
+                        <option value="その他項目：">その他</option>
+                    </select>
+                    <div class="input-group input-group-sm mb-3">
+                        <input type="text" class="form-control" id="customItemAmount" value="2000" inputmode="numeric">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button" id="addCustomItem">追加</button>
+                        </div>
                     </div>
                 </div>
             </div>

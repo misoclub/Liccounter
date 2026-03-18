@@ -72,6 +72,14 @@ export const UI = {
         $("#processesTable").empty();
         const counts = {};
 
+        let lastNormalSetIndex = -1;
+        for (let i = State.orderHistory.length - 1; i >= 0; i--) {
+            if (State.orderHistory[i].name === CONSTANTS.ITEM_NAMES.NORMAL_SET) {
+                lastNormalSetIndex = i;
+                break;
+            }
+        }
+
         State.orderHistory.forEach((item, index) => {
             const timeText = Utils.dateToStr(new Date(item.date), "hh:mm");
             let nameText = item.name;
@@ -89,15 +97,23 @@ export const UI = {
                 nameText += ` ${counts[item.name]}${item.optionText}`;
             }
 
-            // 削除ボタン付きの行を作成
+            const isSetFee = (item.name === CONSTANTS.ITEM_NAMES.NORMAL_SET || item.name === CONSTANTS.ITEM_NAMES.FIRST_SET);
+            const isLastNormalSet = (index === lastNormalSetIndex);
+            const canDelete = !isSetFee || (item.name === CONSTANTS.ITEM_NAMES.NORMAL_SET && isLastNormalSet);
+
             const row = $("<tr></tr>")
                 .append($("<td class='vcenter'></td>").html(timeText))
                 .append($("<td class='vcenter'></td>").html(nameText))
-                .append($("<td class='vcenter'></td>").html(Number(item.amount).toLocaleString() + "円"))
-                .append($("<td class='vcenter text-right'></td>").append(
-                    $('<button type="button" class="btn btn-sm btn-outline-danger p-1" style="line-height:1;"><i class="fas fa-times"></i></button>')
+                .append($("<td class='vcenter'></td>").html(Number(item.amount).toLocaleString() + "円"));
+
+            const deleteCell = $("<td class='vcenter text-right' style='padding: 0.5rem;'></td>");
+            if (canDelete) {
+                deleteCell.append(
+                    $('<button type="button" class="btn btn-sm btn-outline-danger" style="padding: 2px 6px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; height: 24px; width: 24px; margin: 0;"><i class="fas fa-times" style="font-size: 12px;"></i></button>')
                         .click(() => window.App.deleteHistoryItem(index))
-                ));
+                );
+            }
+            row.append(deleteCell);
 
             $("#processesTable").prepend(row);
         });
@@ -155,7 +171,10 @@ export const UI = {
         $('#hino-amount').val(State.prices.cast);
         $('#sp-amount').val(State.prices.shot);
         $('#other-amount').val(State.prices.other);
-        $('#jyonai-shimei-amount').val(State.prices.shimei);
         $('#endless-jyonai-shimei-amount').val(State.prices.endlessShimei);
+        
+        // カスタム項目の初期表示を反映
+        const currentItem = $('#customItemSelect').val();
+        $('#customItemAmount').val(State.prices.custom[currentItem] || 0);
     }
 };

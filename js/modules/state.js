@@ -6,7 +6,6 @@ export const State = {
     startDate: new Date(),
     timerId: 0,
     
-    // 設定
     settings: {
         chargeTime: 0,
         chargeMoney: 0,
@@ -19,21 +18,19 @@ export const State = {
         firstChargeTime: 0
     },
 
-    // 注文履歴
     orderHistory: [], 
     lastChargeDate: new Date(),
     
-    // 飲食物の単価設定
     prices: {
         my: 0,
         cast: 0,
         shot: 0,
         other: 0,
-        shimei: 0,
+        // shimei は custom に統合
+        custom: {}, // {"項目名": 価格, ...}
         endlessShimei: 0
     },
 
-    // プリセット関連
     presets: {
         editingId: null,
         count: 0,
@@ -42,9 +39,11 @@ export const State = {
 
     visibleFuture: false,
 
-    /**
-     * 合計金額を履歴から算出
-     */
+    waiveConfig: {
+        lastRequiredCount: 0,
+        isLatestSetWaived: false
+    },
+
     get totalMoney() {
         return this.orderHistory.reduce((sum, item) => {
             const val = parseFloat(item.amount);
@@ -52,21 +51,17 @@ export const State = {
         }, 0);
     },
 
-    /**
-     * 特定のアイテムが履歴に何回出たかカウント
-     */
     countItem(name) {
         return this.orderHistory.filter(item => item.name === name).length;
     },
 
-    /**
-     * 状態のリセット
-     */
     reset() {
         this.isStarted = false;
         this.orderHistory = [];
         this.startDate = new Date();
         this.lastChargeDate = new Date();
         this.presets.editingId = null;
+        this.waiveConfig.lastRequiredCount = 0;
+        this.waiveConfig.isLatestSetWaived = false;
     }
 };

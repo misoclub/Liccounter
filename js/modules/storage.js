@@ -10,12 +10,10 @@ export const Storage = {
 
     /**
      * 指定したプリセットIDのデータを読み込んで State を更新
-     * データがない場合は CONSTANTS.DEFAULTS を適用
      */
     load(presetId) {
         const saveData = this.store.get('liccounter_user_data' + presetId);
         
-        // データがない場合（キャッシュクリア後など）はデフォルト値をセット
         if (!saveData) {
             const def = CONSTANTS.DEFAULTS;
             State.settings.chargeMoney = def.CHARGE_MONEY;
@@ -31,12 +29,13 @@ export const Storage = {
             State.prices.cast = def.PRICE_CAST;
             State.prices.shot = def.PRICE_SHOT;
             State.prices.other = def.PRICE_OTHER;
-            State.prices.shimei = def.PRICE_SHIMEI;
             State.prices.endlessShimei = def.PRICE_ENDLESS_SHIMEI;
+            
+            // カスタム価格の初期化
+            State.prices.custom = { ...def.CUSTOM_PRICES };
             return null;
         }
 
-        // 保存データがある場合はそれらを適用
         State.settings.chargeMoney = Utils.checkZero(saveData["liccounter_chageSetting"]);
         State.settings.taxRate = Utils.checkZero(saveData["liccounter_taxSetting"]);
         State.settings.chargeTime = Utils.checkZero(saveData["liccounter_chargeTimeSetting"]);
@@ -50,8 +49,10 @@ export const Storage = {
         State.prices.cast = Utils.checkZero(saveData["price_cast"]);
         State.prices.shot = Utils.checkZero(saveData["price_shot"]);
         State.prices.other = Utils.checkZero(saveData["price_other"]);
-        State.prices.shimei = Utils.checkZero(saveData["price_shimei"]);
         State.prices.endlessShimei = Utils.checkZero(saveData["price_endless_shimei"]);
+        
+        // カスタム価格の読み込み（なければデフォルトから補完）
+        State.prices.custom = saveData["price_custom"] || { ...CONSTANTS.DEFAULTS.CUSTOM_PRICES };
 
         return saveData;
     },
@@ -76,8 +77,8 @@ export const Storage = {
             price_cast: State.prices.cast,
             price_shot: State.prices.shot,
             price_other: State.prices.other,
-            price_shimei: State.prices.shimei,
-            price_endless_shimei: State.prices.endlessShimei
+            price_endless_shimei: State.prices.endlessShimei,
+            price_custom: State.prices.custom // 追加
         };
 
         this.store.set('liccounter_user_data' + presetId, saveData);

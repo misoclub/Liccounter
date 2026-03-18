@@ -9,34 +9,23 @@ import { UI } from './modules/ui.js';
 import { CONSTANTS } from './modules/constants.js';
 
 const App = {
-    /**
-     * アプリの初期化
-     */
     init() {
         this.loadInitialData();
         this.setupEventListeners();
         this.renderPresets();
-        
-        if (State.isStarted) {
-            this.resumeWork();
-        }
+        if (State.isStarted) this.resumeWork();
     },
 
-    /**
-     * 初期データの読み込み
-     */
     loadInitialData() {
         const saveData = Storage.load(0);
         if (saveData) {
             State.isStarted = !!saveData["liccounter_enable"];
             State.startDate = new Date(saveData["liccounter_time"]);
-            
             if (saveData["liccounter_jsonText"]) {
                 const history = JSON.parse(saveData["liccounter_jsonText"]);
                 State.orderHistory = history.map(item => ({...item, date: new Date(item.date)}));
             }
         }
-
         const presetCountData = Storage.store.get(CONSTANTS.STORAGE_KEYS.PRESET_COUNT);
         if (presetCountData) {
             State.presets.count = presetCountData.presetCount;
@@ -46,15 +35,11 @@ const App = {
                 if (data) State.presets.data.push(data);
             }
         }
-
         this.updateLastChargeDate();
         UI.syncFormFromState();
         UI.updateAll();
     },
 
-    /**
-     * イベントリスナーの設定
-     */
     setupEventListeners() {
         $('#start').click(() => this.startWork());
         $('#stop').click(() => this.stopWork());
@@ -62,28 +47,23 @@ const App = {
         $('#startTimeEdit').change((e) => {
             const timeValue = e.target.value;
             if (!timeValue) return;
-
             const [hours, minutes] = timeValue.split(':');
             const newDate = new Date(State.startDate);
             newDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-            
             if (newDate > new Date()) {
                 if (!confirm("入店時刻が未来になっていますがよろしいですか？")) {
                     UI.updateSettingsDisplay();
                     return;
                 }
             }
-
             State.startDate = newDate;
-            
-            // 入店時刻が変わったので、セット料金の計算をやり直す
-            // すでにある「セット料金」と「永続指名」を履歴から削除して再生成
             State.orderHistory = State.orderHistory.filter(item => 
                 item.name !== CONSTANTS.ITEM_NAMES.FIRST_SET && 
                 item.name !== CONSTANTS.ITEM_NAMES.NORMAL_SET &&
                 item.name !== CONSTANTS.ITEM_NAMES.ENDLESS_SHIMEI
             );
-            
+            State.waiveConfig.isLatestSetWaived = false;
+            State.waiveConfig.lastRequiredCount = 0;
             this.updateLastChargeDate();
             this.checkAutoCharge();
             UI.updateAll();
@@ -94,8 +74,30 @@ const App = {
         $('#hino-drink').click(() => this.addDrinkFromInput('cast', CONSTANTS.ITEM_NAMES.CAST_DRINK, CONSTANTS.SUFFIX.CUP));
         $('#sp-drink').click(() => this.addDrinkFromInput('shot', CONSTANTS.ITEM_NAMES.SHOT, CONSTANTS.SUFFIX.CUP));
         $('#other-drink').click(() => this.addDrinkFromInput('other', CONSTANTS.ITEM_NAMES.OTHER_DRINK, CONSTANTS.SUFFIX.CUP));
-        $('#jyonai-shimei').click(() => this.addDrinkFromInput('shimei', CONSTANTS.ITEM_NAMES.JYONAI_SHIMEI, CONSTANTS.SUFFIX.NOMINATION));
         
+        // --- その他項目の追加 ---
+        $('#addCustomItem').click(() => {
+            const itemName = $('#customItemSelect').val();
+            const amount = Utils.checkZero($('#customItemAmount').val());
+            // 価格を記憶
+            State.prices.custom[itemName] = amount;
+            this.addDrink(itemName, amount, new Date(), CONSTANTS.SUFFIX.COUNT);
+        });
+
+        // セレクトボックス切り替え時に価格を表示
+        $('#customItemSelect').change((e) => {
+            const itemName = e.target.value;
+            const price = State.prices.custom[itemName] || 0;
+            $('#customItemAmount').val(price);
+        });
+
+        // 価格入力変更時に記憶
+        $('#customItemAmount').change((e) => {
+            const itemName = $('#customItemSelect').val();
+            State.prices.custom[itemName] = Utils.checkZero(e.target.value);
+            Storage.save(0, State.isStarted);
+        });
+
         $('#endless-jyonai-shimei').click(() => {
             const amount = Utils.checkZero($('#endless-jyonai-shimei-amount').val());
             State.settings.endlessJyonaiShimei = amount;
@@ -103,12 +105,7 @@ const App = {
             $('#endless-jyonai-shimei').prop('disabled', true);
         });
 
-        const configInputs = [
-            '#pro-amount', '#hino-amount', '#sp-amount', '#other-amount', 
-            '#jyonai-shimei-amount', '#endless-jyonai-shimei-amount',
-            '#shopNameSetting', '#numSetting', '#firstTimeChargeTimeSetting', 
-            '#firstTimeChargeMoneySetting', '#chargeTimeSetting', '#chageSetting', '#taxSetting', '#otherSetting'
-        ];
+        const configInputs = ['#pro-amount', '#hino-amount', '#sp-amount', '#other-amount', '#endless-jyonai-shimei-amount', '#shopNameSetting', '#numSetting', '#firstTimeChargeTimeSetting', '#firstTimeChargeMoneySetting', '#chargeTimeSetting', '#chageSetting', '#taxSetting', '#otherSetting'];
         $(configInputs.join(',')).change(() => {
             this.syncStateFromForm();
             UI.updateAll();
@@ -118,20 +115,14 @@ const App = {
         $('#save-preset').click(() => {
             this.syncStateFromForm();
             let targetId = State.presets.editingId;
-            if (targetId === null) {
-                State.presets.count++;
-                targetId = State.presets.count;
-            }
+            if (targetId === null) { State.presets.count++; targetId = State.presets.count; }
             Storage.save(targetId, false);
             alert("お店情報を保存しました。");
             location.reload();
         });
 
         $('#cacheclear').click(() => {
-            if (confirm("保存してあるデータをすべて削除しますか？")) {
-                Storage.store.clearAll();
-                location.reload();
-            }
+            if (confirm("保存してあるデータをすべて削除しますか？")) { Storage.store.clearAll(); location.reload(); }
         });
 
         $('#futureButton').click(() => {
@@ -152,26 +143,21 @@ const App = {
         State.settings.chargeMoney = Utils.checkZero($('#chageSetting').val());
         State.settings.taxRate = Utils.checkZero($('#taxSetting').val());
         State.settings.initialCost = Utils.checkZero($('#otherSetting').val());
-
         State.prices.my = Utils.checkZero($('#pro-amount').val());
         State.prices.cast = Utils.checkZero($('#hino-amount').val());
         State.prices.shot = Utils.checkZero($('#sp-amount').val());
         State.prices.other = Utils.checkZero($('#other-amount').val());
-        State.prices.shimei = Utils.checkZero($('#jyonai-shimei-amount').val());
         State.prices.endlessShimei = Utils.checkZero($('#endless-jyonai-shimei-amount').val());
+        
+        // カスタム価格も同期
+        const currentItem = $('#customItemSelect').val();
+        State.prices.custom[currentItem] = Utils.checkZero($('#customItemAmount').val());
     },
 
     renderPresets() {
         State.presets.data.forEach(preset => {
             if (!preset.enable) return;
-
-            const button = $(`
-                <div class="col">
-                    <button type="button" class="btn btn-secondary btn-lg btn-block">${preset.presetName}</button>
-                </div>
-                <div class="my-box mt-1"></div>
-            `);
-
+            const button = $(`<div class="col"><button type="button" class="btn btn-secondary btn-lg btn-block">${preset.presetName}</button></div><div class="my-box mt-1"></div>`);
             button.find('button').click(() => {
                 if ($('#myCheckbox').is(':checked')) {
                     const result = confirm(`${preset.presetName}を編集、または削除しますか？\n[OK]: 編集(読み込み) / [キャンセル]: 削除`);
@@ -195,7 +181,6 @@ const App = {
                     UI.updateAll();
                 }
             });
-
             $('#presetButtonTarget').after(button);
         });
     },
@@ -203,20 +188,14 @@ const App = {
     startWork() {
         if (State.isStarted) return;
         this.syncStateFromForm();
-        if (State.settings.chargeTime <= 0) {
-            alert("セット時間は0にできません");
-            return;
-        }
+        if (State.settings.chargeTime <= 0) { alert("セット時間は0にできません"); return; }
+        State.reset(); 
+        this.syncStateFromForm();
         State.isStarted = true;
         State.startDate = new Date();
-        if (State.settings.initialCost > 0) {
-            this.addDrink(CONSTANTS.ITEM_NAMES.INITIAL_COST, State.settings.initialCost, State.startDate, "", false);
-        }
+        if (State.settings.initialCost > 0) { this.addDrink(CONSTANTS.ITEM_NAMES.INITIAL_COST, State.settings.initialCost, State.startDate, "", false); }
         this.resumeWork();
-        $('#start').hide();
-        $('#stop').show();
-        $('.ui_setting').hide();
-        $('.ui_runtime').show();
+        $('#start').hide(); $('#stop').show(); $('.ui_setting').hide(); $('.ui_runtime').show();
         Storage.save(0, true);
     },
 
@@ -230,33 +209,22 @@ const App = {
         updateTick();
         State.timerId = setInterval(updateTick, 1000);
         UI.updateAll();
-        $('#start').hide();
-        $('#stop').show();
-        $('.ui_setting').hide();
-        $('.ui_runtime').show();
+        $('#start').hide(); $('#stop').show(); $('.ui_setting').hide(); $('.ui_runtime').show();
     },
 
     stopWork() {
         if (!confirm("お会計しますか？")) return;
         clearInterval(State.timerId);
-        State.isStarted = false;
         UI.updateAll(); 
         const { total } = Calculator.calculateTotalWithTax(State.totalMoney, State.settings.taxRate);
         alert(`お会計は ${total.toLocaleString()} 円でした。\n今日も楽しめましたか？`);
+        State.reset(); 
         Storage.save(0, false);
-        $('#stop').hide();
-        $('#menu_button_1, #menu_button_2').hide();
-        $('#resultDownload').show();
+        location.reload();
     },
 
-    /**
-     * 履歴から最後のセット終了時刻を算出し、State.lastChargeDate を更新
-     */
     updateLastChargeDate() {
-        // デフォルトは開始時刻
         let lastDate = new Date(State.startDate.getTime());
-        
-        // 履歴をスキャンして最後のセットを探す
         State.orderHistory.forEach(item => {
             if (item.name === CONSTANTS.ITEM_NAMES.FIRST_SET) {
                 const d = new Date(item.date);
@@ -268,14 +236,12 @@ const App = {
                 if (d > lastDate) lastDate = d;
             }
         });
-        
         State.lastChargeDate = lastDate;
     },
 
     checkAutoCharge() {
         const diffTime = Date.now() - State.startDate.getTime();
         let seconds = Math.floor(diffTime / 1000) + 1;
-
         if (State.settings.firstChargeTime > 0 && State.settings.firstChargeMoney > 0) {
             if (State.countItem(CONSTANTS.ITEM_NAMES.FIRST_SET) === 0) {
                 const chargeDate = new Date(State.startDate.getTime());
@@ -283,23 +249,23 @@ const App = {
             }
             seconds -= State.settings.firstChargeTime * 60;
         }
-
-        const requiredSets = Math.ceil(seconds / (60 * State.settings.chargeTime));
+        const requiredSets = Math.max(0, Math.ceil(seconds / (60 * State.settings.chargeTime)));
+        if (requiredSets > State.waiveConfig.lastRequiredCount) {
+            State.waiveConfig.isLatestSetWaived = false;
+            State.waiveConfig.lastRequiredCount = requiredSets;
+        }
+        const targetSets = State.waiveConfig.isLatestSetWaived ? requiredSets - 1 : requiredSets;
         const currentSets = State.countItem(CONSTANTS.ITEM_NAMES.NORMAL_SET);
-        
-        if (requiredSets > currentSets) {
-            for (let i = currentSets; i < requiredSets; i++) {
+        if (targetSets > currentSets) {
+            for (let i = currentSets; i < targetSets; i++) {
                 const chargeDate = new Date(State.startDate.getTime());
                 chargeDate.setMinutes(chargeDate.getMinutes() + (State.settings.chargeTime * i) + State.settings.firstChargeTime);
-                
                 this.addDrink(CONSTANTS.ITEM_NAMES.NORMAL_SET, State.settings.chargeMoney * State.settings.numPeople, chargeDate, CONSTANTS.SUFFIX.MINUTES);
-
                 if (State.settings.endlessJyonaiShimei > 0) {
                     this.addDrink(CONSTANTS.ITEM_NAMES.ENDLESS_SHIMEI, State.settings.endlessJyonaiShimei, chargeDate, CONSTANTS.SUFFIX.NOMINATION);
                 }
             }
         }
-        
         this.updateLastChargeDate();
         UI.updateFutureTable();
     },
@@ -317,7 +283,16 @@ const App = {
     },
 
     deleteHistoryItem(index) {
+        const item = State.orderHistory[index];
+        if (!item) return;
         if (confirm("この項目を削除しますか？")) {
+            if (item.name === CONSTANTS.ITEM_NAMES.NORMAL_SET) {
+                State.waiveConfig.isLatestSetWaived = true;
+                const diffTime = Date.now() - State.startDate.getTime();
+                let seconds = Math.floor(diffTime / 1000) + 1;
+                if (State.settings.firstChargeTime > 0) seconds -= State.settings.firstChargeTime * 60;
+                State.waiveConfig.lastRequiredCount = Math.max(0, Math.ceil(seconds / (60 * State.settings.chargeTime)));
+            }
             State.orderHistory.splice(index, 1);
             this.updateLastChargeDate();
             UI.updateAll();
@@ -326,18 +301,9 @@ const App = {
     },
 
     getPriceInputId(key) {
-        const map = {
-            my: 'pro-amount',
-            cast: 'hino-amount',
-            shot: 'sp-amount',
-            other: 'other-amount',
-            shimei: 'jyonai-shimei-amount'
-        };
+        const map = { my: 'pro-amount', cast: 'hino-amount', shot: 'sp-amount', other: 'other-amount' };
         return map[key];
     }
 };
 
-$(() => {
-    window.App = App;
-    App.init();
-});
+$(() => { window.App = App; App.init(); });

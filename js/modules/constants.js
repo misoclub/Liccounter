@@ -16,14 +16,23 @@ export const CONSTANTS = {
         PRICE_CAST: 1000,
         PRICE_SHOT: 1500,
         PRICE_OTHER: 3000,
-        PRICE_SHIMEI: 2000,
+        // カスタム項目の初期値
+        CUSTOM_PRICES: {
+            "単発場内指名☝️：": 2000,
+            "チェキ📸：": 1000,
+            "同伴料🤝：": 3000,
+            "シャンパン🍾：": 10000,
+            "キャストショット🥃：": 1500,
+            "日本酒🍶：": 2000,
+            "料理🍳：": 1000,
+            "その他項目：": 0
+        },
         PRICE_ENDLESS_SHIMEI: 3000
     },
     ITEM_NAMES: {
         FIRST_SET: "初回セット料👯‍♀️：",
         NORMAL_SET: "セット料👯‍♀️：",
         INITIAL_COST: "初期費用💰",
-        JYONAI_SHIMEI: "単発場内指名☝️：",
         ENDLESS_SHIMEI: "永続場内指名✌️：",
         GUEST_DRINK: "ゲスドリ🍺：",
         CAST_DRINK: "キャスドリ🍹：",
@@ -33,7 +42,8 @@ export const CONSTANTS = {
     SUFFIX: {
         MINUTES: "分",
         NOMINATION: "指名",
-        CUP: "杯目"
+        CUP: "杯目",
+        COUNT: "個"
     },
     STORAGE_KEYS: {
         USER_DATA_PREFIX: "liccounter_user_data",
