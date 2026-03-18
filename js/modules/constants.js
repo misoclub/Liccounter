@@ -39,7 +39,7 @@ export const CONSTANTS = {
         ENDLESS_SHIMEI: "永続場内指名✌️：",
         GUEST_DRINK: "ゲスドリ🍺：",
         CAST_DRINK: "キャスドリ🍹：",
-        SHOT: "ショット🥃：",
+        SHOT: "ゲストショット🥃：",
         OTHER_DRINK: "キャストショット🥃："
     },
     SUFFIX: {

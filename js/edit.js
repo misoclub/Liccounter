@@ -142,6 +142,15 @@ const EditApp = {
         State.prices.custom = newCustom;
 
         Storage.save(this.presetId, false, false); // isNew = false
+
+        // --- 追加: 現在選択中のお店なら、メインセッション(0)も更新する ---
+        const currentSession = Storage.load(0);
+        if (currentSession && currentSession["origin_preset_id"] == this.presetId) {
+            // 現在のセッション(0)の注文履歴と開始時間は維持しつつ、設定だけ最新にする
+            // Storage.load(0)でStateに履歴が入っているので、そのままsave(0)すれば設定だけが上書きされる
+            Storage.save(0, !!currentSession["liccounter_enable"], false);
+        }
+
         alert("設定を保存しました。");
         window.location.href = './';
     }
