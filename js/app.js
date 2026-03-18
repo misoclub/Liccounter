@@ -168,12 +168,16 @@ const App = {
         $('#save-preset').click(() => {
             this.syncStateFromForm();
             Storage.save(999, false, true);
-            alert("お店情報を保存しました。");
-            location.reload();
+            UI.showToast("お店情報を保存しました。");
+            setTimeout(() => location.reload(), 1500);
         });
 
         $('#cacheclear').click(() => {
-            if (confirm("保存してあるデータをすべて削除しますか？")) { Storage.clearAll(); location.reload(); }
+            if (confirm("保存してあるデータをすべて削除しますか？")) { 
+                Storage.clearAll(); 
+                UI.showToast("全データを削除しました。");
+                setTimeout(() => location.reload(), 1500);
+            }
         });
 
         $('#export-json').click((e) => {
@@ -213,10 +217,10 @@ const App = {
                 const content = event.target.result;
                 if (confirm("現在の全てのデータが上書きされます。よろしいですか？")) {
                     if (Storage.importAllData(content)) {
-                        alert("インポートが完了しました。ページを再読み込みします。");
-                        location.reload();
+                        UI.showToast("インポートが完了しました。");
+                        setTimeout(() => location.reload(), 1500);
                     } else {
-                        alert("インポートに失敗しました。ファイル形式が正しいか確認してください。");
+                        UI.showToast("インポートに失敗しました。ファイル形式を確認してください。", "danger");
                     }
                 }
                 // ファイル入力をリセット（同じファイルを再度選択できるように）
@@ -352,11 +356,13 @@ const App = {
             }
         });
     },
-
     startWork() {
         if (State.isStarted) return;
         this.syncStateFromForm();
-        if (State.settings.chargeTime <= 0) { alert("セット時間は0にできません"); return; }
+        if (State.settings.chargeTime <= 0) { 
+            UI.showToast("セット時間は0にできません", "warning"); 
+            return; 
+        }
         State.reset(); 
         this.syncStateFromForm();
         State.isStarted = true; 
@@ -395,7 +401,7 @@ const App = {
             const presetName = State.presets.data.find(p => p.presetId === State.presets.currentId)?.presetName || "このお店";
             if (confirm(`ドリンクの値段等の設定が「${presetName}」の保存内容から変更されています。\n変更した内容を上書き保存しますか？`)) {
                 Storage.save(State.presets.currentId, false, false);
-                alert("上書き保存しました。");
+                UI.showToast("設定を上書き保存しました。");
             }
         }
 

@@ -193,5 +193,34 @@ export const UI = {
         if (customItem) {
             $('#customItemAmount').val(customItem.price);
         }
+    },
+
+    /**
+     * トースト通知を表示する（Bootstrap/MDB風スタイル）
+     */
+    showToast(message, type = 'info') {
+        const bgClass = type === 'danger' ? 'bg-danger' : (type === 'warning' ? 'bg-warning text-dark' : 'bg-primary');
+        const toastId = 'toast-' + Date.now();
+        const toastHtml = `
+            <div id="${toastId}" class="toast align-items-center text-white ${bgClass} border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true" style="display: block; min-width: 250px; opacity: 0; transition: opacity 0.3s ease-in-out; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                <div class="d-flex">
+                    <div class="toast-body p-3" style="font-size: 0.95rem; font-weight: 500;">
+                        ${message.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        const $toast = $(toastHtml);
+        $('#toast-container').append($toast);
+        
+        // フェードイン
+        setTimeout(() => $toast.css('opacity', '1'), 10);
+        
+        // 4秒後に自動消去
+        setTimeout(() => {
+            $toast.css('opacity', '0');
+            setTimeout(() => $toast.remove(), 300);
+        }, 4000);
     }
 };

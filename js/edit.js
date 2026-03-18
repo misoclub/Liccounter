@@ -5,6 +5,7 @@ import { State } from './modules/state.js';
 import { Storage } from './modules/storage.js';
 import { Utils } from './modules/utils.js';
 import { CONSTANTS } from './modules/constants.js';
+import { UI } from './modules/ui.js';
 
 const EditApp = {
     presetId: null,
@@ -13,8 +14,8 @@ const EditApp = {
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
         if (!id) {
-            alert("IDが正しく指定されていません。");
-            window.location.href = './';
+            UI.showToast("IDが正しく指定されていません。", "danger");
+            setTimeout(() => window.location.href = './', 1500);
             return;
         }
         this.presetId = parseInt(id, 10);
@@ -91,8 +92,8 @@ const EditApp = {
                     // localStorage.removeItem('liccounter_user_data' + this.presetId); 
                 }
                 
-                alert("削除しました。");
-                window.location.href = './';
+                UI.showToast("削除しました。");
+                setTimeout(() => window.location.href = './', 1500);
             }
         });
 
@@ -105,7 +106,10 @@ const EditApp = {
             const suffix = suffixInput.val().trim();
             if (!name) return;
             if (!name.endsWith('：')) name += '：';
-            if (State.prices.custom[name]) { alert("その項目名は既に存在します。"); return; }
+            if (State.prices.custom[name]) { 
+                UI.showToast("その項目名は既に存在します。", "warning"); 
+                return; 
+            }
             State.prices.custom[name] = { price: price, suffix: suffix, visible: true };
             nameInput.val(''); priceInput.val(''); suffixInput.val('');
             this.renderCustomItems();
@@ -151,8 +155,8 @@ const EditApp = {
             Storage.save(0, !!currentSession["liccounter_enable"], false);
         }
 
-        alert("設定を保存しました。");
-        window.location.href = './';
+        UI.showToast("設定を保存しました。");
+        setTimeout(() => window.location.href = './', 1500);
     }
 };
 
