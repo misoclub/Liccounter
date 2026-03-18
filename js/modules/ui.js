@@ -76,7 +76,7 @@ export const UI = {
      * 注文履歴テーブルの更新
      */
     updateHistoryTable() {
-        $("#processesTable").empty();
+        $("#processesTable tbody").empty();
         const counts = {};
 
         // 最後のセット料金（通常セットまたは初回セット）のインデックスを探す
@@ -151,7 +151,7 @@ export const UI = {
                 .append($("<td class='vcenter'></td>").html(nameText))
                 .append(amountCell);
 
-            $("#processesTable").prepend(row);
+            $("#processesTable tbody").prepend(row);
         });
     },
 
