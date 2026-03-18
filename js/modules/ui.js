@@ -117,18 +117,24 @@ export const UI = {
             const isLastSetFee = (index === lastSetFeeIndex);
             const canDelete = !isSetFee || isLastSetFee;
 
-            const amountCell = $("<td class='vcenter'></td>").html(Number(item.amount).toLocaleString() + "円");
+            // 行ごとに色を変える（確実に色が合うようインラインスタイルで指定）
+            const isGray = (index % 2 === 0);
+            const rowBgColor = isGray ? '#f2f2f2' : '#ffffff'; 
+
+            const amountCell = $("<td class='vcenter'></td>");
+            const amountWrapper = $(`<div style="display: flex; align-items: center; justify-content: flex-end;"></div>`);
+            amountWrapper.append($(`<span>${Number(item.amount).toLocaleString()}円</span>`));
+            
             if (canDelete) {
-                amountCell.append(
-                    $('<span class="text-danger float-right ml-2" style="cursor: pointer; font-size: 16px; line-height: 1; padding: 2px;" title="削除"><i class="fas fa-times-circle"></i></span>')
+                // 赤い丸背景の中に、行の色と同じバツ印を表示して「透過」しているように見せる
+                amountWrapper.append(
+                    $(`<span class="ml-2" style="cursor: pointer; width: 20px; height: 20px; min-width: 20px; border-radius: 50%; background-color: #dc3545; color: ${rowBgColor}; display: flex; align-items: center; justify-content: center; font-size: 10px; line-height: 1; flex-shrink: 0;" title="削除"><i class="fas fa-times"></i></span>`)
                         .click(() => window.App.deleteHistoryItem(index))
                 );
             }
+            amountCell.append(amountWrapper);
 
-            // 行ごとに色を変える（落ち着いたグレーと白の交互）
-            const rowClass = (index % 2 === 0) ? 'table-secondary' : '';
-
-            const row = $(`<tr class="${rowClass}"></tr>`)
+            const row = $(`<tr style="background-color: ${rowBgColor};"></tr>`)
                 .append($("<td class='vcenter'></td>").html(timeText))
                 .append($("<td class='vcenter'></td>").html(nameText))
                 .append(amountCell);
