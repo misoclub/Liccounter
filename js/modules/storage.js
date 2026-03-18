@@ -76,8 +76,17 @@ export const Storage = {
         State.settings.initialCost = Utils.checkZero(saveData["liccounter_otherSetting"]);
         State.settings.numPeople = Utils.checkZero(saveData["liccounter_numSetting"] || saveData["liccounter_numPeople"]);
         State.settings.shopName = saveData["liccounter_shopNameSetting"] || "";
-        State.settings.firstChargeMoney = Utils.checkZero(saveData["liccounter_firstTimeChargeMoneySetting"]);
-        State.settings.firstChargeTime = Utils.checkZero(saveData["liccounter_firstTimeChargeTimeSetting"]);
+        State.settings.firstTimeChargeMoney = Utils.checkZero(saveData["liccounter_firstTimeChargeMoneySetting"]);
+        State.settings.firstTimeChargeTime = Utils.checkZero(saveData["liccounter_firstTimeChargeTimeSetting"]);
+
+        // 削除フラグ状態の復元
+        if (saveData["liccounter_waiveConfig"]) {
+            try {
+                const waived = JSON.parse(saveData["liccounter_waiveConfig"]);
+                State.waiveConfig = { ...State.waiveConfig, ...waived };
+            } catch(e) {}
+        }
+
         State.prices.my = Utils.checkZero(saveData["price_my"]);
         State.prices.cast = Utils.checkZero(saveData["price_cast"]);
         State.prices.shot = Utils.checkZero(saveData["price_shot"]);
@@ -135,6 +144,8 @@ export const Storage = {
             liccounter_firstTimeChargeMoneySetting: State.settings.firstChargeMoney,
             liccounter_firstTimeChargeTimeSetting: State.settings.firstChargeTime,
             liccounter_jsonText: JSON.stringify(State.orderHistory),
+            // 削除フラグ状態も保存（リロード対策）
+            liccounter_waiveConfig: JSON.stringify(State.waiveConfig),
             price_my: State.prices.my,
             price_cast: State.prices.cast,
             price_shot: State.prices.shot,

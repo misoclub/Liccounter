@@ -38,7 +38,8 @@ const App = {
         // デフォルトの状態（新規のお店）として表示する
         if (!State.isStarted) {
             Storage.load(null); // デフォルト値をStateにセット
-            State.presets.currentId = null;
+            // ここで currentId を null にすると選択状態が消えてしまうので、
+            // 「リロード直後」のみリセットしたい場合は Storage.load(0) の結果を使います
         }
 
         // 保存済みのお店リストの収集
@@ -403,16 +404,27 @@ const App = {
         clearInterval(State.timerId); UI.updateAll(); 
         const { total } = Calculator.calculateTotalWithTax(State.totalMoney, State.settings.taxRate);
 
-        // お会計合計を表示（OKのみの通知として表示）
+        // お会計合計を表示
         await UI.showAlert(`お会計は ${total.toLocaleString()} 円でした。\n今日も楽しめましたか？`, "お会計完了");
 
-        // 値が変更されているかチェックし、上書き保存を提案
-        if (State.presets.currentId && this.hasSettingsChanged(State.presets.currentId)) {
-            const presetName = State.presets.data.find(p => p.presetId === State.presets.currentId)?.presetName || "このお店";
-            const saveOk = await UI.showConfirm(`ドリンクの値段等の設定が「${presetName}」の保存内容から変更されています。\n変更した内容を上書き保存しますか？`, "設定の保存");
-            if (saveOk) {
-                Storage.save(State.presets.currentId, false, false);
-                await UI.showAlert("設定を上書き保存しました。");
+        // --- お店情報の保存・更新チェック ---
+        if (State.presets.currentId) {
+            // 保存済みの店舗を選択している場合：変更があるときだけ更新を確認
+            if (this.hasSettingsChanged(State.presets.currentId)) {
+                const presetName = State.presets.data.find(p => p.presetId === State.presets.currentId)?.presetName || "このお店";
+                const saveOk = await UI.showConfirm(`「${presetName}」の設定が変更されています。\n変更した内容を上書き保存しますか？`, "設定の更新");
+                if (saveOk) {
+                    Storage.save(State.presets.currentId, false, false);
+                    await UI.showAlert("設定を上書き保存しました。");
+                }
+            }
+        } else {
+            // 保存済みの店舗を選択していない場合：新規保存を提案
+            const saveNewOk = await UI.showConfirm("このお店の料金設定を保存して、次回から簡単に呼び出せるようにしますか？", "お店情報の新規保存");
+            if (saveNewOk) {
+                const newId = Storage.save(999, false, true);
+                State.presets.currentId = newId;
+                await UI.showAlert(`「${State.settings.shopName}」として新しく保存しました。`);
             }
         }
 
@@ -430,12 +442,14 @@ const App = {
      */
     hasSettingsChanged(presetId) {
         const savedData = Storage.get('liccounter_user_data' + presetId);
-        if (!savedData) return true; // 保存データがなければ変更ありとみなす
+        if (!savedData) return true;
 
         const s = State.settings;
         const p = State.prices;
 
-        // 基本設定の比較
+        // 全ての基本設定項目を比較
+        if (savedData["liccounter_shopNameSetting"] !== s.shopName) return true;
+        if (Utils.checkZero(savedData["liccounter_numSetting"] || savedData["liccounter_numPeople"]) !== s.numPeople) return true;
         if (Utils.checkZero(savedData["liccounter_chageSetting"]) !== s.chargeMoney) return true;
         if (Utils.checkZero(savedData["liccounter_taxSetting"]) !== s.taxRate) return true;
         if (Utils.checkZero(savedData["liccounter_chargeTimeSetting"]) !== s.chargeTime) return true;
@@ -452,15 +466,22 @@ const App = {
 
         // カスタム項目の価格比較
         const loadedCustom = savedData["price_custom"] || {};
-        const currentCustomKeys = Object.keys(p.custom);
+        const currentCustomNames = Object.keys(p.custom);
+        const loadedCustomNames = Object.keys(loadedCustom);
         
-        for (const key of currentCustomKeys) {
-            const currentItem = p.custom[key];
-            const loadedItem = loadedCustom[key];
-            if (!loadedItem) return true; // 新しく追加された項目がある場合
+        // 項目数自体が違う場合は変更あり
+        if (currentCustomNames.length !== loadedCustomNames.length) return true;
+
+        for (const name of currentCustomNames) {
+            const currentItem = p.custom[name];
+            const loadedItem = loadedCustom[name];
+            if (!loadedItem) return true;
             
             const loadedPrice = typeof loadedItem === 'object' ? Utils.checkZero(loadedItem.price) : Utils.checkZero(loadedItem);
-            if (loadedPrice !== currentItem.price) return true;
+            const loadedSuffix = typeof loadedItem === 'object' ? loadedItem.suffix : "";
+            
+            if (currentItem.price !== loadedPrice) return true;
+            if (currentItem.suffix !== loadedSuffix) return true;
         }
 
         return false;
