@@ -375,9 +375,13 @@ const App = {
         UI.updateAll(); // 表示を最新のState（現在時刻）で更新
         this.resumeWork();
         
-        window.scrollTo(0, 0);
         $('#start').hide(); $('#stop').show(); $('.ui_setting').hide(); $('.ui_runtime').show();
         Storage.save(0, true);
+
+        // UIの切り替えが終わった後に確実に最上部へスクロールさせる
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+        }, 50);
     },
 
     resumeWork() {
