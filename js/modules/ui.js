@@ -110,19 +110,18 @@ export const UI = {
             const isLastSetFee = (index === lastSetFeeIndex);
             const canDelete = !isSetFee || isLastSetFee;
 
-            const row = $("<tr></tr>")
-                .append($("<td class='vcenter'></td>").html(timeText))
-                .append($("<td class='vcenter'></td>").html(nameText))
-                .append($("<td class='vcenter'></td>").html(Number(item.amount).toLocaleString() + "円"));
-
-            const deleteCell = $("<td class='vcenter text-right' style='padding: 0.5rem;'></td>");
+            const amountCell = $("<td class='vcenter'></td>").html(Number(item.amount).toLocaleString() + "円");
             if (canDelete) {
-                deleteCell.append(
-                    $('<button type="button" class="btn btn-sm btn-outline-danger" style="padding: 2px 6px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; height: 24px; width: 24px; margin: 0;"><i class="fas fa-times" style="font-size: 12px;"></i></button>')
+                amountCell.append(
+                    $('<span class="text-danger float-right ml-2" style="cursor: pointer; font-size: 16px; line-height: 1; padding: 2px;" title="削除"><i class="fas fa-times-circle"></i></span>')
                         .click(() => window.App.deleteHistoryItem(index))
                 );
             }
-            row.append(deleteCell);
+
+            const row = $("<tr></tr>")
+                .append($("<td class='vcenter'></td>").html(timeText))
+                .append($("<td class='vcenter'></td>").html(nameText))
+                .append(amountCell);
 
             $("#processesTable").prepend(row);
         });

@@ -42,6 +42,10 @@ p.example2 {
                                   supported by Chrome and Opera */
 }
 
+.vcenter {
+    vertical-align: middle !important;
+}
+
 /* 選択中のお店のハイライト用スタイル */
 .preset-active {
     background-color: #28a745 !important;
