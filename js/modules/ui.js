@@ -30,7 +30,11 @@ export const UI = {
      * 設定値（テキスト表示部分）を更新
      */
     updateSettingsDisplay() {
-        $('#startTimeText').text(Utils.dateToStr(State.startDate, '入店時刻：YYYY年MM月DD日(WW) hh:mm'));
+        // 入店時刻の入力欄を更新
+        const hours = ('0' + State.startDate.getHours()).slice(-2);
+        const minutes = ('0' + State.startDate.getMinutes()).slice(-2);
+        $('#startTimeEdit').val(`${hours}:${minutes}`);
+
         $('#shopNameText').text("店舗名：" + (State.settings.shopName || "名無しのお店"));
         $('#numPeopleText').text("来店人数：" + State.settings.numPeople + "人");
 
@@ -56,18 +60,15 @@ export const UI = {
     updateHistoryTable() {
         $("#processesTable").empty();
         
-        // アイテムごとの出現回数を動的に把握
         const counts = {};
 
         State.orderHistory.forEach(item => {
             const timeText = Utils.dateToStr(new Date(item.date), "hh:mm");
             let nameText = item.name;
             
-            // カウントを更新
             counts[item.name] = (counts[item.name] || 0) + 1;
 
             if (item.optionText === CONSTANTS.SUFFIX.MINUTES) {
-                // セット料金の時間計算
                 const setIndex = counts[item.name];
                 let totalMinutes = 0;
                 if (item.name === CONSTANTS.ITEM_NAMES.FIRST_SET) {

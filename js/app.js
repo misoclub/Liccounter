@@ -61,6 +61,31 @@ const App = {
         $('#start').click(() => this.startWork());
         $('#stop').click(() => this.stopWork());
 
+        // 入店時刻の変更
+        $('#startTimeEdit').change((e) => {
+            const timeValue = e.target.value; // "HH:mm"
+            if (!timeValue) return;
+
+            const [hours, minutes] = timeValue.split(':');
+            const newDate = new Date(State.startDate);
+            newDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+            
+            // 未来の時刻にならないようにチェック（簡易的）
+            if (newDate > new Date()) {
+                if (!confirm("入店時刻が未来になっていますがよろしいですか？")) {
+                    UI.updateSettingsDisplay(); // 元に戻す
+                    return;
+                }
+            }
+
+            State.startDate = newDate;
+            
+            // 入店時刻が変わったので、自動セット料金の再チェックが必要
+            this.checkAutoCharge();
+            UI.updateAll();
+            Storage.save(0, State.isStarted);
+        });
+
         // ドリンク追加ボタン
         $('#pro-drink').click(() => this.addDrinkFromInput('my', CONSTANTS.ITEM_NAMES.GUEST_DRINK, CONSTANTS.SUFFIX.CUP));
         $('#hino-drink').click(() => this.addDrinkFromInput('cast', CONSTANTS.ITEM_NAMES.CAST_DRINK, CONSTANTS.SUFFIX.CUP));
