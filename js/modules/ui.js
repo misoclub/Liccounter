@@ -147,8 +147,8 @@ export const UI = {
             amountCell.append(amountWrapper);
 
             const row = $(`<tr style="background-color: ${rowBgColor};"></tr>`)
-                .append($("<td class='vcenter' style='white-space: nowrap;'></td>").html(timeText))
-                .append($("<td class='vcenter' style='white-space: nowrap;'></td>").html(nameText))
+                .append($("<td class='vcenter' style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'></td>").html(timeText))
+                .append($("<td class='vcenter' style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'></td>").html(nameText))
                 .append(amountCell);
 
             $("#processesTable tbody").prepend(row);
@@ -188,9 +188,9 @@ export const UI = {
 
             $("#futurePprocessesTable").append(
                 $(`<tr class="added-row" style="background-color: ${rowBgColor};"></tr>`)
-                .append($("<td class='vcenter' style='white-space: nowrap;'></td>").html(`${totalSetCount}セット`))
-                .append($("<td class='vcenter' style='white-space: nowrap;'></td>").html(`${timeText}〜${endTimeText}`))
-                .append($("<td class='vcenter text-right' style='white-space: nowrap;'></td>").html(total.toLocaleString() + "円"))
+                .append($("<td class='vcenter' style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'></td>").html(`${totalSetCount}セット`))
+                .append($("<td class='vcenter' style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'></td>").html(`${timeText}〜${endTimeText}`))
+                .append($("<td class='vcenter text-right' style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'></td>").html(total.toLocaleString() + "円"))
             );
         }
     },
