@@ -34,6 +34,7 @@ export const CONSTANTS = {
             "イエーガー🦌：": { price: 1000, suffix: "杯" },
             "カラオケ🎤：": { price: 1000, suffix: "曲" },
             "料理🍳：": { price: 1000, suffix: "品" },
+            "割引🉐：": { price: -1000, suffix: "円" },
             "その他：": { price: 1000, suffix: "" }
         },
         PRICE_ENDLESS_SHIMEI: 3000

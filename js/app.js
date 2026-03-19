@@ -247,6 +247,7 @@ const App = {
         $('#backToTop').click(() => {
             window.scrollTo(0, 0);
             State.presets.currentId = null; // お会計後のトップ戻り時は選択状態を完全にクリア
+            State.settings.endlessJyonaiShimei = 0; // 永続指名フラグをリセット
             State.reset();
             Storage.save(0, false);
             location.reload();
@@ -259,12 +260,31 @@ const App = {
             resultText += `退店時刻: ${Utils.dateToStr(now, 'YYYY/MM/DD(WW) hh:mm')}\n`;
             resultText += `--------------------\n`;
 
+            const counts = {};
             State.orderHistory.forEach(item => {
                 const timeStr = Utils.dateToStr(new Date(item.date), "hh:mm");
+                counts[item.name] = (counts[item.name] || 0) + 1;
+                const currentCount = counts[item.name];
+                
                 let nameStr = item.name.replace('：', '');
-                if (item.optionText && item.optionText !== CONSTANTS.SUFFIX.MINUTES) {
-                    nameStr += ` (${item.optionText})`;
+                
+                if (item.optionText === CONSTANTS.SUFFIX.MINUTES) {
+                    // セット料金の特別処理
+                    const duration = (item.name === CONSTANTS.ITEM_NAMES.FIRST_SET) ? State.settings.firstChargeTime : State.settings.chargeTime;
+                    const endDate = new Date(item.date);
+                    endDate.setMinutes(endDate.getMinutes() + duration);
+                    const endTimeStr = Utils.dateToStr(endDate, "hh:mm");
+                    
+                    if (item.name === CONSTANTS.ITEM_NAMES.FIRST_SET) {
+                        nameStr = `${nameStr} (${endTimeStr}まで)`;
+                    } else {
+                        nameStr = `${currentCount}${nameStr} (${endTimeStr}まで)`;
+                    }
+                } else if (item.optionText) {
+                    // 通常項目のカウント表示
+                    nameStr = `${nameStr} ${currentCount}${item.optionText}`;
                 }
+                
                 resultText += `${timeStr} - ${nameStr}: ${item.amount}円\n`;
             });
 

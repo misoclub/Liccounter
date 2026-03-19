@@ -63,6 +63,7 @@ export const State = {
         this.lastChargeDate = new Date();
         this.presets.editingId = null;
         // this.presets.currentId = null; // 入店時のリセットでは選択状態を解除しない
+        this.settings.endlessJyonaiShimei = 0; // 永続指名フラグをリセット
         this.waiveConfig.lastRequiredCount = 0;
         this.waiveConfig.isLatestSetWaived = false;
         this.waiveConfig.isFirstSetWaived = false;
