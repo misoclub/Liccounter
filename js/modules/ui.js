@@ -188,8 +188,8 @@ export const UI = {
 
             $("#futurePprocessesTable").append(
                 $(`<tr class="added-row" style="background-color: ${rowBgColor};"></tr>`)
-                .append($("<td class='vcenter' style='white-space: nowrap;'></td>").html(`${totalSetCount}セット`))
-                .append($("<td class='vcenter' style='white-space: nowrap;'></td>").html(`${timeText}〜${endTimeText}`))
+                .append($("<td class='vcenter text-center' style='white-space: nowrap;'></td>").html(`${totalSetCount}セット`))
+                .append($("<td class='vcenter text-center' style='white-space: nowrap;'></td>").html(`${timeText}〜${endTimeText}`))
                 .append($("<td class='vcenter text-right' style='white-space: nowrap;'></td>").html(total.toLocaleString() + "円"))
             );
         }
