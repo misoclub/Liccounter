@@ -537,7 +537,7 @@ const App = {
     },
 
     checkAutoCharge() {
-        const diffTime = Date.now() - State.startDate.getTime();
+        const diffTime = Calculator.getElapsedMs(State.startDate);
         let seconds = Math.floor(diffTime / 1000) + 1;
         if (State.settings.firstChargeTime > 0 && State.settings.firstChargeMoney > 0) {
             if (State.countItem(CONSTANTS.ITEM_NAMES.FIRST_SET) === 0 && !State.waiveConfig.isFirstSetWaived) {
@@ -597,7 +597,7 @@ const App = {
                 } else {
                     State.waiveConfig.isFirstSetWaived = true;
                 }
-                const diffTime = Date.now() - State.startDate.getTime();
+                const diffTime = Calculator.getElapsedMs(State.startDate);
                 let seconds = Math.floor(diffTime / 1000) + 1;
                 if (State.settings.firstChargeTime > 0) seconds -= State.settings.firstChargeTime * 60;
                 State.waiveConfig.lastRequiredCount = Math.max(0, Math.ceil(seconds / (60 * State.settings.chargeTime)));

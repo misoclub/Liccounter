@@ -2,6 +2,8 @@
  * アプリケーション内で使用する定数
  */
 export const CONSTANTS = {
+    // 滞在時間・自動課金の計算上限（会計押し忘れ対策）
+    MAX_STAY_MS: 24 * 60 * 60 * 1000,
     // 標準のデフォルト値
     DEFAULTS: {
         SHOP_NAME: "初めてのお店",

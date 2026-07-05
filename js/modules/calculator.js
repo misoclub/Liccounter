@@ -2,14 +2,21 @@
  * 料金計算や時間の計算
  */
 import { Utils } from './utils.js';
+import { CONSTANTS } from './constants.js';
 
 export const Calculator = {
+    /**
+     * 入店からの経過ミリ秒（最大 MAX_STAY_MS で頭打ち）
+     */
+    getElapsedMs(startTime) {
+        return Math.min(Date.now() - startTime.getTime(), CONSTANTS.MAX_STAY_MS);
+    },
+
     /**
      * 経過時間のテキストを返す
      */
     getPassTimeText(startTime) {
-        const diffTime = Date.now() - startTime.getTime();
-        const seconds = Math.floor(diffTime / 1000);
+        const seconds = Math.floor(this.getElapsedMs(startTime) / 1000);
         return this.formatTime(seconds);
     },
 
